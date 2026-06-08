@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ls -la /Users/pedro/Developer/funcionaria/funcionaria/*.config.*)",
+      "Bash(npx tsc --noEmit -p apps/api/tsconfig.json)",
+      "Bash(npx tsc --noEmit --project apps/api/tsconfig.json)",
+      "Bash(npx tsc --noEmit)",
+      "Bash(npx tsc)",
+      "Bash(npx tsc --project apps/api/tsconfig.json --noEmit)",
+      "Bash(npx tsc -p /Users/pedro/Developer/funcionaria/funcionaria/apps/api/tsconfig.json --noEmit)",
+      "Bash(npx tsc -p apps/api/tsconfig.json --noEmit)",
+      "Bash(npx tsc --version)",
+      "Bash(node_modules/.bin/tsc -p apps/api/tsconfig.json --noEmit)",
+      "Bash(echo \"EXIT:$?\")",
+      "Bash(node_modules/.bin/tsc -p packages/types/tsconfig.json)",
+      "Bash(node_modules/.bin/tsc -p packages/prompts/tsconfig.json)",
+      "Bash(grep -n '^function ' /Users/pedro/Developer/funcionaria/funcionaria/apps/web/src/components/RecalibrateModal.tsx /Users/pedro/Developer/funcionaria/funcionaria/apps/web/src/components/CheckinCard.tsx /Users/pedro/Developer/funcionaria/funcionaria/apps/web/src/components/ExerciseModal.tsx /Users/pedro/Developer/funcionaria/funcionaria/apps/web/src/app/plan/[id]/page.tsx)",
+      "Bash(grep -l 'RecalibrateResult' /Users/pedro/Developer/funcionaria/funcionaria/packages/types/dist/*)",
+      "Bash(npx tsc:*)"
+    ]
+  }
+}

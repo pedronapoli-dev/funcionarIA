@@ -1,0 +1,14 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "outDir":  "./dist",
+    "rootDir": "./src",
+    "lib":     ["ES2022", "DOM"]
+  },
+  "references": [
+    { "path": "../../packages/types" },
+    { "path": "../../packages/prompts" }
+  ],
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist"]
+}
