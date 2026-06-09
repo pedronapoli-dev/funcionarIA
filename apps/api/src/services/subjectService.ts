@@ -10,7 +10,8 @@ export const extractTextFromPdf = async (buffer: Buffer): Promise<string> => {
 }
 
 export const parseSubjectFromText = async (rawText: string): Promise<ParsedSubject> => {
-  const response = await generate(PARSE_SUBJECT_SYSTEM, parseSubjectPrompt(rawText), 2048)
+  const response = await generate(PARSE_SUBJECT_SYSTEM, parseSubjectPrompt(rawText), 4096)
+  console.info('[parseSubject] raw response:', response.slice(0, 500))
   const parsed = parseJsonResponse<ParsedSubject>(response, 'ementa')
   parsed.topics        = parsed.topics        ?? []
   parsed.bibliography  = parsed.bibliography  ?? []
