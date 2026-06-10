@@ -6,6 +6,7 @@ import { skillsApi } from '@/lib/api'
 import { CHECKIN_ACTION_LABELS } from '@/lib/constants'
 import { useAsyncAction } from '@/hooks/useAsyncAction'
 import { LimitReachedBlock } from '@/components/LimitReachedBlock'
+import { CooldownNotice } from '@/components/CooldownNotice'
 import type { Plan, PlanCheckin, ScheduleWeek } from '@/types'
 
 interface Props {
@@ -21,7 +22,7 @@ const TREND_CONFIG = {
 
 export const CheckinCard = ({ plan, activeWeek }: Props) => {
   const [open, setOpen] = useState(false)
-  const { loading, error, limitError, result, execute, reset } = useAsyncAction<PlanCheckin>()
+  const { loading, error, limitError, cooldownError, result, execute, reset } = useAsyncAction<PlanCheckin>()
 
   // Collect context from plan schedule for the active week
   const week = plan.schedule.find((w: ScheduleWeek) => w.week === activeWeek)
@@ -99,6 +100,14 @@ export const CheckinCard = ({ plan, activeWeek }: Props) => {
     return (
       <div className="card">
         <LimitReachedBlock limitError={limitError} context="inline" />
+      </div>
+    )
+  }
+
+  if (cooldownError) {
+    return (
+      <div className="card">
+        <CooldownNotice cooldownError={cooldownError} context="inline" />
       </div>
     )
   }

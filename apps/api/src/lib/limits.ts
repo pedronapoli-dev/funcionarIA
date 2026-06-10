@@ -56,8 +56,12 @@ export const checkAndIncrementApiCall = async (
 ): Promise<ApiCallResult> => {
   const { maxApiCallsPerMonth } = PLAN_LIMITS[plan]
 
-  // Planos ilimitados: sempre permitido (tracking via RPC pendente — ver migration 005)
+  // Planos ilimitados: sempre permitido. Tracking via RPC (incremento atômico,
+  // fire-and-forget — não bloqueia a resposta nem falha a requisição).
   if (maxApiCallsPerMonth === null) {
+    void supabase.rpc('increment_api_calls', { user_id: userId }).then(({ error }) => {
+      if (error) console.error('[limits] increment_api_calls falhou:', error.message)
+    })
     return { allowed: true }
   }
 

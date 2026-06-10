@@ -15,7 +15,6 @@ apps/web/          → @educarseia/web (Next.js App Router, React 18, Tailwind 3
 apps/api/          → @educarseia/api (Fastify 5.8, Zod, @fastify/jwt)
 packages/types/    → @educarseia/types (shared types — single source of truth)
 packages/config/   → shared configuration (tsconfig presets only for now)
-packages/prompts/  → AI prompt templates (NOT used by API — stale duplicate of apps/api/src/lib/prompts.ts)
 ```
 
 ## Current State (what's built)
@@ -37,8 +36,8 @@ packages/prompts/  → AI prompt templates (NOT used by API — stale duplicate 
 - `GET /api/exercises?plan_id=` — List exercises
 - `PATCH /api/exercises/:id/answer` — Answer exercise
 - `POST /api/skills/diagnose` — Pedagogical diagnostic (ZDP, prerequisites, risk topics)
-- `POST /api/skills/checkin` — Weekly progress evaluation. Enforces `maxApiCallsPerMonth`.
-- `POST /api/skills/recalibrate` — Plan recalibration when blocked. Enforces `maxApiCallsPerMonth`.
+- `POST /api/skills/checkin` — Weekly progress evaluation. Enforces `maxApiCallsPerMonth` + 24h cooldown (per plan, or per user when no `plan_id`).
+- `POST /api/skills/recalibrate` — Plan recalibration when blocked. Enforces `maxApiCallsPerMonth` + 168h (1 week) cooldown (per plan, or per user when no `plan_id`).
 - `POST /api/checkout` — Create Stripe Checkout Session for plan upgrade. Returns `{ url }`.
 - `POST /api/webhook` — Stripe webhook (checkout.session.completed, subscription updated/deleted).
 
@@ -48,7 +47,8 @@ packages/prompts/  → AI prompt templates (NOT used by API — stale duplicate 
 - `anthropic.ts` — generate() and generateWithTools() (agentic tool_use loop), model: `claude-sonnet-4-6`
 - `prompts.ts` (v3.0.0) — All system/user prompts with pedagogical examples
 - `skillRouter.ts` — Routes to prompt variant based on (studentLevel, urgency, planPhase, performanceTrend). Variants: foundation-first, mastery-refinement, intensive-review, standard, recovery, acceleration.
-- `limits.ts` — `checkPlansLimit()` and `checkAndIncrementApiCall()`. Enforces PLAN_LIMITS, monthly reset, 80% usage warning. Fails open on DB error. 18 unit tests in `src/lib/__tests__/limits.test.ts`.
+- `limits.ts` — `checkPlansLimit()` and `checkAndIncrementApiCall()`. Enforces PLAN_LIMITS, monthly reset, 80% usage warning. Unlimited tiers track usage via `increment_api_calls` RPC (fire-and-forget). Fails open on DB error. 20 unit tests in `src/lib/__tests__/limits.test.ts`.
+- `cooldowns.ts` — `checkSkillCooldown()` and `recordSkillUsage()`. Enforces per-skill cooldowns (checkin: 24h, recalibrate: 168h) scoped by `plan_id` (or per-user when absent), backed by `skill_usage_log` table. Returns 429 + `CooldownResponse` shape. Fails open on DB error. 11 unit tests in `src/lib/__tests__/cooldowns.test.ts`.
 
 **MCP Tools (lib/mcp/):** Internal TypeScript functions exposed to Claude via tool_use API:
 - `supabaseTools.ts` — get_student_progress, get_spaced_review_status, get_plan_context
@@ -69,18 +69,19 @@ packages/prompts/  → AI prompt templates (NOT used by API — stale duplicate 
 
 **Components:**
 - `DayItem` — Study session card with complete toggle, badges (type/priority/bloom), mastery criteria, review chain, tip, practice button
-- `CheckinCard` — Weekly check-in form + results (trend, progress, action rationale). Shows `LimitReachedBlock` on 402.
+- `CheckinCard` — Weekly check-in form + results (trend, progress, action rationale). Shows `LimitReachedBlock` on 402, `CooldownNotice` on 429 cooldown.
 - `ExerciseModal` — Exercise generation/display with scaffolded hints, answer feedback. Catches `ApiLimitError` and generic errors separately; shows `LimitReachedBlock` on 402.
-- `RecalibrateModal` — "I'm stuck" flow: block type → topic → AI recalibration results. Shows `LimitReachedBlock` on 402.
+- `RecalibrateModal` — "I'm stuck" flow: block type → topic → AI recalibration results. Shows `LimitReachedBlock` on 402, `CooldownNotice` on 429 cooldown.
 - `LimitReachedBlock` — Shared upgrade CTA component (lock icon, usage bar, "Ver planos" button). Props: `{ limitError: LimitedResponse, context?: 'modal' | 'inline' }`.
+- `CooldownNotice` — Shared cooldown notice component (clock icon, "tente novamente em..."). Props: `{ cooldownError: CooldownResponse, context?: 'modal' | 'inline' }`.
 - `BloomBadge` + `BloomDistribution` — Bloom level visualization
 - `Navbar` — Header with nav + logout
 
 **Error handling:** `error.tsx` (route-level) and `global-error.tsx` (root-level) error boundaries.
 
 **Lib:**
-- `api.ts` — Typed API client. Throws `ApiLimitError` (extends Error, has `upgrade_url` + `usage`) on 402 responses.
-- `useAsyncAction` hook — exposes `{ loading, error, limitError, result, execute, reset }`. `limitError: LimitedResponse | null` is separate from `error: string | null`.
+- `api.ts` — Typed API client. Throws `ApiLimitError` (extends Error, has `upgrade_url` + `usage`) on 402 responses, `ApiCooldownError` (extends Error, has `retry_at`) on 429 cooldown responses.
+- `useAsyncAction` hook — exposes `{ loading, error, limitError, cooldownError, result, execute, reset }`. `limitError: LimitedResponse | null` and `cooldownError: CooldownResponse | null` are separate from `error: string | null`.
 - Supabase clients (browser + server), middleware (auth guard), constants (UI labels/config).
 
 ### Database (Supabase)
@@ -93,10 +94,12 @@ Key: plans.schedule stores full ScheduleWeek[] as JSONB; completions tracked in 
 **Applied migrations:**
 - 003: `application_context` column on plans
 - 004: plan tier constraint (free/basic/pro/max/beta), `api_calls_this_month` int, `api_calls_reset_at` timestamptz on users
+- 005: `increment_api_calls(user_id)` RPC (SECURITY DEFINER, atomic counter for unlimited tiers, EXECUTE restricted to `service_role` only)
+- 006: `skill_usage_log` table (user_id, plan_id, skill_type, created_at) for checkin/recalibrate cooldown tracking, RLS-protected
 
 ### Shared Types (packages/types/src/index.ts)
 
-Covers: User, Subject, ParsedSubject, Plan (with application_context), ScheduleWeek, ScheduleDay, BloomLevel, ScaffoldingLevel, StudentProfile, DiagnosticResult, PlanCheckin, RecalibrateResult, Exercise, StudySession, SkillRoute, RoutingContext, and all union types.
+Covers: User, Subject, ParsedSubject, Plan (with application_context), ScheduleWeek, ScheduleDay, BloomLevel, ScaffoldingLevel, StudentProfile, DiagnosticResult, PlanCheckin, RecalibrateResult, Exercise, StudySession, SkillRoute, RoutingContext, LimitedResponse, CooldownResponse, and all union types.
 
 **Tier types:**
 ```typescript
@@ -113,11 +116,8 @@ export const PLAN_LIMITS: Record<UserPlan, PlanLimits> = {
 
 ## Known Gaps & Incomplete Features
 
-1. **packages/prompts not used** — API has its own prompts.ts; shared package is a stale duplicate.
-2. **Checkin/Recalibrate cooldowns not enforced** — Comments say "Phase 2: DB" but nothing implemented.
-3. **Migration 005 pending** — Need `increment_api_calls` stored procedure for atomic counter increment on unlimited plans (currently unlimited plans skip tracking entirely).
-4. **No PDF export** — Planned for future.
-5. **No test coverage for API routes** — Only `limits.ts` has unit tests (18 passing via Vitest).
+1. **No PDF export** — Planned for future.
+2. **No test coverage for API routes** — Only `limits.ts` and `cooldowns.ts` have unit tests (31 passing via Vitest).
 
 ## Design Decisions to Preserve
 
@@ -127,7 +127,8 @@ export const PLAN_LIMITS: Record<UserPlan, PlanLimits> = {
 - **Phase 1 vs Phase 2:** checkin/recalibrate support manual data (no plan_id) AND MCP-backed (with plan_id).
 - **Schedule is denormalized JSONB:** Full plan schedule in plans.schedule. Completions tracked in BOTH study_sessions table AND JSONB.
 - **Limit enforcement:** Always use `checkPlansLimit()` / `checkAndIncrementApiCall()` from `lib/limits.ts`. Return 402 with `LimitedResponse` shape. Never hard-block without upgrade URL.
-- **Graceful degradation:** 402 → `ApiLimitError` on frontend → `limitError` in `useAsyncAction` → `LimitReachedBlock` component. Generic errors stay in `error` state. Never mix the two.
+- **Cooldown enforcement:** Always use `checkSkillCooldown()` / `recordSkillUsage()` from `lib/cooldowns.ts` for checkin/recalibrate. Return 429 with `CooldownResponse` shape. Check cooldown BEFORE `checkAndIncrementApiCall`, record usage AFTER a successful skill run.
+- **Graceful degradation:** 402 → `ApiLimitError` on frontend → `limitError` in `useAsyncAction` → `LimitReachedBlock` component. 429 cooldown → `ApiCooldownError` → `cooldownError` → `CooldownNotice` component. Generic errors stay in `error` state. Never mix these.
 - **NUNCA UTILIZE GAMBIARRAS TÉCNICAS** — Always find root cause, apply structurally correct solution.
 
 ## Rules

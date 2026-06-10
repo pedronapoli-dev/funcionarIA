@@ -9,7 +9,6 @@
 - `apps/api/` — Fastify 5.8 (Node.js 20+, @fastify/jwt, Zod)
 - `packages/types/` — Shared TypeScript types (single source of truth)
 - `packages/config/` — Shared configuration
-- `packages/prompts/` — AI prompt templates
 
 **Database & Auth**: Supabase (PostgreSQL + Auth + RLS)
 **Payments**: Stripe

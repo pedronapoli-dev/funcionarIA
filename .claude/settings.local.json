@@ -13,10 +13,11 @@
       "Bash(node_modules/.bin/tsc -p apps/api/tsconfig.json --noEmit)",
       "Bash(echo \"EXIT:$?\")",
       "Bash(node_modules/.bin/tsc -p packages/types/tsconfig.json)",
-      "Bash(node_modules/.bin/tsc -p packages/prompts/tsconfig.json)",
       "Bash(grep -n '^function ' /Users/pedro/Developer/funcionaria/funcionaria/apps/web/src/components/RecalibrateModal.tsx /Users/pedro/Developer/funcionaria/funcionaria/apps/web/src/components/CheckinCard.tsx /Users/pedro/Developer/funcionaria/funcionaria/apps/web/src/components/ExerciseModal.tsx /Users/pedro/Developer/funcionaria/funcionaria/apps/web/src/app/plan/[id]/page.tsx)",
       "Bash(grep -l 'RecalibrateResult' /Users/pedro/Developer/funcionaria/funcionaria/packages/types/dist/*)",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "mcp__claude_ai_Supabase__list_migrations",
+      "mcp__claude_ai_Supabase__apply_migration"
     ]
   }
 }

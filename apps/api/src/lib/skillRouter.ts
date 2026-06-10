@@ -2,8 +2,7 @@
 // skillRouter.ts — SkillRouter: Router Pattern para seleção de skills
 //
 // Seleciona a variante de prompt correta com base no contexto
-// do aluno e da requisição. Mantém em sincronia com
-// packages/prompts/src/router.ts.
+// do aluno e da requisição.
 // ============================================================
 
 import {

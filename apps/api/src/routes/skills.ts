@@ -6,6 +6,7 @@ import { runRecalibration } from '../services/recalibrateService'
 import { supabase }         from '../lib/supabase'
 import { getUserId }        from '../plugins/auth'
 import { checkAndIncrementApiCall } from '../lib/limits'
+import { checkSkillCooldown, recordSkillUsage } from '../lib/cooldowns'
 
 const MAX_TOPICS_FOR_PLAN = 30   // caps output tokens in generate-plan
 
@@ -59,7 +60,7 @@ export const skillsRoutes: FastifyPluginAsync = async (fastify) => {
 
   // POST /api/skills/checkin
   // Weekly progress evaluation. Phase 1: manual data. Phase 2: Supabase MCP.
-  // Cooldown: 1 call per 24h per plan (enforced client-side in Phase 1).
+  // Cooldown: 1 call per 24h per plan (per usuário quando plan_id ausente).
   fastify.post<{
     Body: {
       plan_id?:                 string   // optional now; required in Phase 2 for MCP
@@ -100,6 +101,11 @@ export const skillsRoutes: FastifyPluginAsync = async (fastify) => {
     },
   }, async (request, reply) => {
     const userId = getUserId(request)
+    const planId = request.body.plan_id
+
+    const cooldownResult = await checkSkillCooldown(userId, planId, 'checkin')
+    if (!cooldownResult.allowed) return reply.status(429).send(cooldownResult.cooldown)
+
     const { data: user } = await supabase.from('users').select('plan').eq('id', userId).single()
     const callResult = await checkAndIncrementApiCall(userId, (user?.plan ?? 'free') as UserPlan)
     if (!callResult.allowed) return reply.status(402).send(callResult.limited)
@@ -113,13 +119,16 @@ export const skillsRoutes: FastifyPluginAsync = async (fastify) => {
       hoursStudiedThisWeek:   request.body.hours_studied_this_week,
       hoursPlannedThisWeek:   request.body.hours_planned_this_week,
       applicationContext:     request.body.application_context,
-    }, request.body.plan_id)
+    }, planId)
+
+    await recordSkillUsage(userId, planId, 'checkin')
+
     return reply.status(200).send({ checkin: result, ...(callResult.warning ?? {}) })
   })
 
   // POST /api/skills/recalibrate
   // Plan recalibration when a block is detected. Phase 1: manual data. Phase 2: Supabase MCP.
-  // Cooldown: 1 call per 168h (1 week) per plan (enforced client-side in Phase 1).
+  // Cooldown: 1 call per 168h (1 week) per plan (per usuário quando plan_id ausente).
   fastify.post<{
     Body: {
       plan_id?:            string   // optional now; required in Phase 2 for MCP
@@ -153,6 +162,11 @@ export const skillsRoutes: FastifyPluginAsync = async (fastify) => {
     },
   }, async (request, reply) => {
     const userId = getUserId(request)
+    const planId = request.body.plan_id
+
+    const cooldownResult = await checkSkillCooldown(userId, planId, 'recalibrate')
+    if (!cooldownResult.allowed) return reply.status(429).send(cooldownResult.cooldown)
+
     const { data: user } = await supabase.from('users').select('plan').eq('id', userId).single()
     const callResult = await checkAndIncrementApiCall(userId, (user?.plan ?? 'free') as UserPlan)
     if (!callResult.allowed) return reply.status(402).send(callResult.limited)
@@ -166,7 +180,10 @@ export const skillsRoutes: FastifyPluginAsync = async (fastify) => {
       topicsDone:         request.body.topics_done,
       applicationContext: request.body.application_context,
       currentScaffolding: request.body.current_scaffolding,
-    })
+    }, planId)
+
+    await recordSkillUsage(userId, planId, 'recalibrate')
+
     return reply.status(200).send({ recalibration: result, ...(callResult.warning ?? {}) })
   })
 }

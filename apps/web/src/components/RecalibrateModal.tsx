@@ -6,6 +6,7 @@ import { skillsApi } from '@/lib/api'
 import { ROOT_CAUSE_LABELS } from '@/lib/constants'
 import { useAsyncAction } from '@/hooks/useAsyncAction'
 import { LimitReachedBlock } from '@/components/LimitReachedBlock'
+import { CooldownNotice } from '@/components/CooldownNotice'
 import type { Plan, ScheduleWeek, RecalibrateResult } from '@/types'
 
 interface Props {
@@ -26,7 +27,7 @@ const BLOCK_OPTIONS: { value: BlockType; label: string; description: string }[] 
 export const RecalibrateModal = ({ plan, activeWeek, onClose }: Props) => {
   const [blockType, setBlockType]       = useState<BlockType | null>(null)
   const [blockedTopic, setBlockedTopic] = useState('')
-  const { loading, error, limitError, result, execute } = useAsyncAction<RecalibrateResult>()
+  const { loading, error, limitError, cooldownError, result, execute } = useAsyncAction<RecalibrateResult>()
 
   const currentWeek = plan.schedule.find((w: ScheduleWeek) => w.week === activeWeek)
   const allDays     = plan.schedule.flatMap((w: ScheduleWeek) => w.days)
@@ -77,6 +78,8 @@ export const RecalibrateModal = ({ plan, activeWeek, onClose }: Props) => {
             <RecalibrateResultView result={result} onClose={onClose} />
           ) : limitError ? (
             <LimitReachedBlock limitError={limitError} context="modal" />
+          ) : cooldownError ? (
+            <CooldownNotice cooldownError={cooldownError} context="modal" />
           ) : (
             <>
               {/* Block type selection */}

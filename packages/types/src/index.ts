@@ -253,6 +253,12 @@ export interface UsageWarning {
   usage:       { used: number; max: number | null; percent: number }
 }
 
+export interface CooldownResponse {
+  cooldown:  true
+  retry_at:  string
+  message:   string
+}
+
 // ── Router types ──────────────────────────────────────────────────────────────
 
 export type SkillId =

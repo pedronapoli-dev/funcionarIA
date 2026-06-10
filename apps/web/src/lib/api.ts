@@ -1,5 +1,5 @@
 import { createClient } from './supabase'
-import type { Plan, Subject, Exercise, CreatePlanInput, PlanCheckin, RecalibrateResult, LimitedResponse } from '@/types'
+import type { Plan, Subject, Exercise, CreatePlanInput, PlanCheckin, RecalibrateResult, LimitedResponse, CooldownResponse } from '@/types'
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001'
 
@@ -11,6 +11,15 @@ export class ApiLimitError extends Error {
     super('Limite do plano atingido.')
     this.upgrade_url = data.upgrade_url
     this.usage       = data.usage
+  }
+}
+
+export class ApiCooldownError extends Error {
+  readonly cooldown = true
+  readonly retry_at: string
+  constructor(data: CooldownResponse) {
+    super(data.message)
+    this.retry_at = data.retry_at
   }
 }
 
@@ -28,11 +37,12 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
     headers: { 'Content-Type': 'application/json', ...authHeader },
     body: body ? JSON.stringify(body) : undefined,
   })
-  if (res.status === 402) {
+  if (!res.ok) {
     const data = await res.json().catch(() => ({}))
-    throw new ApiLimitError(data as LimitedResponse)
+    if (res.status === 402) throw new ApiLimitError(data as LimitedResponse)
+    if (res.status === 429 && (data as Partial<CooldownResponse>).cooldown) throw new ApiCooldownError(data as CooldownResponse)
+    throw { status: res.status, error: res.statusText, ...data }
   }
-  if (!res.ok) { const err = await res.json().catch(() => ({ error: res.statusText })); throw { status: res.status, ...err } }
   if (res.status === 204) return undefined as T
   return res.json()
 }

@@ -15,7 +15,6 @@ apps/web/          → @educarseia/web (Next.js App Router, React 18, Tailwind 3
 apps/api/          → @educarseia/api (Fastify 5.8, Zod, @fastify/jwt)
 packages/types/    → @educarseia/types (shared types — single source of truth)
 packages/config/   → shared configuration (tsconfig presets only for now)
-packages/prompts/  → AI prompt templates (has src/prompts.ts + src/router.ts but NOT used by API — API has its own copy in apps/api/src/lib/prompts.ts)
 ```
 
 ## Current State (what's built)

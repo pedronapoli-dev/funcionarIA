@@ -9,18 +9,20 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 // ── Mock Supabase — vi.hoisted() garante inicialização antes do hoist de vi.mock ─
 
-const { mockSingle, mockUpdate, mockEqUpdate, mockEqSelect, mockSelect, mockFrom } = vi.hoisted(() => ({
+const { mockSingle, mockUpdate, mockEqUpdate, mockEqSelect, mockSelect, mockFrom, mockRpc } = vi.hoisted(() => ({
   mockSingle:   vi.fn(),
   mockUpdate:   vi.fn(),
   mockEqUpdate: vi.fn(),
   mockEqSelect: vi.fn(),
   mockSelect:   vi.fn(),
   mockFrom:     vi.fn(),
+  mockRpc:      vi.fn(),
 }))
 
 vi.mock('../supabase', () => ({
   supabase: {
     from: mockFrom,
+    rpc:  mockRpc,
   },
 }))
 
@@ -106,12 +108,25 @@ describe('checkPlansLimit', () => {
 describe('checkAndIncrementApiCall', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    mockRpc.mockResolvedValue({ error: null })
   })
 
   it('permite plano max sem consultar DB (maxApiCallsPerMonth=null)', async () => {
     const r = await checkAndIncrementApiCall('u1', 'max')
     expect(r.allowed).toBe(true)
     expect(mockFrom).not.toHaveBeenCalled()
+  })
+
+  it('plano max dispara increment_api_calls via RPC (fire-and-forget)', async () => {
+    const r = await checkAndIncrementApiCall('u1', 'max')
+    expect(r.allowed).toBe(true)
+    expect(mockRpc).toHaveBeenCalledWith('increment_api_calls', { user_id: 'u1' })
+  })
+
+  it('plano max não bloqueia mesmo se a RPC falhar', async () => {
+    mockRpc.mockResolvedValue({ error: { message: 'boom' } })
+    const r = await checkAndIncrementApiCall('u1', 'max')
+    expect(r.allowed).toBe(true)
   })
 
   it('permite plano pro consultando DB (maxApiCallsPerMonth=100)', async () => {
