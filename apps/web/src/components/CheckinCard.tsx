@@ -5,6 +5,7 @@ import { Loader2, TrendingUp, TrendingDown, Minus } from 'lucide-react'
 import { skillsApi } from '@/lib/api'
 import { CHECKIN_ACTION_LABELS } from '@/lib/constants'
 import { useAsyncAction } from '@/hooks/useAsyncAction'
+import { LimitReachedBlock } from '@/components/LimitReachedBlock'
 import type { Plan, PlanCheckin, ScheduleWeek } from '@/types'
 
 interface Props {
@@ -20,7 +21,7 @@ const TREND_CONFIG = {
 
 export const CheckinCard = ({ plan, activeWeek }: Props) => {
   const [open, setOpen] = useState(false)
-  const { loading, error, result, execute, reset } = useAsyncAction<PlanCheckin>()
+  const { loading, error, limitError, result, execute, reset } = useAsyncAction<PlanCheckin>()
 
   // Collect context from plan schedule for the active week
   const week = plan.schedule.find((w: ScheduleWeek) => w.week === activeWeek)
@@ -90,6 +91,14 @@ export const CheckinCard = ({ plan, activeWeek }: Props) => {
         <button onClick={() => { reset(); setOpen(false) }} className="text-xs text-gray-400 hover:text-gray-600">
           Fechar
         </button>
+      </div>
+    )
+  }
+
+  if (limitError) {
+    return (
+      <div className="card">
+        <LimitReachedBlock limitError={limitError} context="inline" />
       </div>
     )
   }

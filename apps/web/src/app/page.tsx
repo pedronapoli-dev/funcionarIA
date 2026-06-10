@@ -108,6 +108,9 @@ const LandingPage = () => {
               <span className="text-sm font-bold tracking-tight text-gray-900">educar-se-ia</span>
             </div>
             <div className="flex items-center gap-3">
+              <Link href="/planos" className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors">
+                Planos
+              </Link>
               <Link href="/login" className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors">
                 Entrar
               </Link>

@@ -1,11 +1,12 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { X, Loader2, CheckCircle2, XCircle } from 'lucide-react'
-import { exercisesApi } from '@/lib/api'
+import { X, Loader2, CheckCircle2, XCircle, AlertCircle } from 'lucide-react'
+import { exercisesApi, ApiLimitError } from '@/lib/api'
 import { EXERCISE_TYPE_LABELS } from '@/lib/constants'
 import { BloomBadge } from '@/components/BloomBadge'
-import type { Exercise, ScheduleDay } from '@/types'
+import { LimitReachedBlock } from '@/components/LimitReachedBlock'
+import type { Exercise, ScheduleDay, LimitedResponse } from '@/types'
 
 interface Props {
   planId: string
@@ -22,13 +23,18 @@ const inferPlanPhase = (progress: number): 'inicial' | 'intermediaria' | 'final'
 }
 
 export const ExerciseModal = ({ planId, subjectName, day, progress = 0, onClose }: Props) => {
-  const [exercises, setExercises] = useState<Exercise[]>([])
-  const [loading, setLoading]     = useState(false)
+  const [exercises, setExercises]   = useState<Exercise[]>([])
+  const [loading, setLoading]       = useState(false)
+  const [genError, setGenError]     = useState<string | null>(null)
+  const [limitError, setLimitError] = useState<LimitedResponse | null>(null)
 
   useEffect(() => {
-    if (!day) { setExercises([]); return }
+    if (!day) { setExercises([]); setGenError(null); setLimitError(null); return }
     setLoading(true)
     setExercises([])
+    setGenError(null)
+    setLimitError(null)
+
     const run = async () => {
       const existing = await exercisesApi.listByPlan(planId)
       const forTopic = existing.exercises.filter(e => e.topic === day.topic)
@@ -45,7 +51,16 @@ export const ExerciseModal = ({ planId, subjectName, day, progress = 0, onClose 
         setExercises(res.exercises)
       }
     }
-    run().finally(() => setLoading(false))
+
+    run()
+      .catch((err: unknown) => {
+        if (err instanceof ApiLimitError) {
+          setLimitError({ limited: true, upgrade_url: err.upgrade_url, usage: err.usage })
+        } else {
+          setGenError('Erro ao gerar exercícios. Tente novamente.')
+        }
+      })
+      .finally(() => setLoading(false))
   }, [day?.topic, planId])
 
   useEffect(() => {
@@ -105,6 +120,13 @@ export const ExerciseModal = ({ planId, subjectName, day, progress = 0, onClose 
             <div className="flex flex-col items-center justify-center gap-3 py-16">
               <Loader2 className="animate-spin text-indigo-600" size={32} />
               <p className="text-sm text-gray-400">Gerando exercícios com IA...</p>
+            </div>
+          ) : limitError ? (
+            <LimitReachedBlock limitError={limitError} context="modal" />
+          ) : genError ? (
+            <div className="flex flex-col items-center justify-center gap-3 py-16 text-center">
+              <AlertCircle className="text-red-400" size={28} />
+              <p className="text-sm text-gray-500">{genError}</p>
             </div>
           ) : (
             exercises.map((ex, i) => <ExerciseCard key={ex.id} exercise={ex} index={i} />)
