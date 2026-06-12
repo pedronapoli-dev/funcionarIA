@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { GraduationCap, Plus, LogOut } from 'lucide-react'
+import { GraduationCap, Plus, LogOut, Settings } from 'lucide-react'
 import { createClient } from '@/lib/supabase'
 
 export const Navbar = () => {
@@ -46,6 +46,18 @@ export const Navbar = () => {
 
             <Link href="/plan/new" className="btn-primary ml-2 py-1.5">
               <Plus size={14} aria-hidden="true" /> Novo plano
+            </Link>
+
+            <Link
+              href="/conta"
+              title="Minha conta"
+              className={`ml-1 rounded-md p-2 transition-colors ${
+                pathname === '/conta'
+                  ? 'bg-gray-100 text-gray-900'
+                  : 'text-gray-500 hover:bg-gray-100 hover:text-gray-700'
+              }`}
+            >
+              <Settings size={15} aria-hidden="true" />
             </Link>
 
             <button

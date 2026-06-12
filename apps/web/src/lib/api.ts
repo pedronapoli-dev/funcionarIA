@@ -103,6 +103,10 @@ export const skillsApi = {
   }) => request<{ recalibration: RecalibrateResult }>('POST', '/api/skills/recalibrate', body),
 }
 
+export const accountApi = {
+  delete: () => request<void>('DELETE', '/api/account'),
+}
+
 export const exercisesApi = {
   generate: (body: { plan_id: string; topic: string; subject_name: string; course?: string; count?: number; bloom_level?: string; plan_phase?: string }) =>
     request<{ exercises: Exercise[] }>('POST', '/api/exercises/generate', body),

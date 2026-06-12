@@ -26,6 +26,7 @@ import { exercisesRoutes } from './routes/exercises'
 import { webhookRoutes }   from './routes/webhook'
 import { skillsRoutes }    from './routes/skills'
 import { checkoutRoutes }  from './routes/checkout'
+import { accountRoutes }   from './routes/account'
 import { authPlugin }      from './plugins/auth'
 
 const server = Fastify({
@@ -134,6 +135,7 @@ async function bootstrap() {
   await server.register(webhookRoutes,   { prefix: '/api/webhooks' })
   await server.register(skillsRoutes,    { prefix: '/api/skills' })
   await server.register(checkoutRoutes,  { prefix: '/api' })
+  await server.register(accountRoutes,   { prefix: '/api' })
 
   server.get('/health', async () => ({ status: 'ok', ts: new Date().toISOString() }))
 

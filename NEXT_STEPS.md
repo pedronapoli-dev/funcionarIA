@@ -71,6 +71,57 @@
 - `npm run test` na raiz → **68/68 testes passando** (47 `apps/api` + 21
   `apps/web`); `npm run type-check` em `apps/web` limpo.
 
+## ✅ Concluído nesta sessão (4) — Auth completeness + páginas LGPD
+
+Gate de pré-beta: dois blockers identificados (sem fluxo de recuperação de
+senha / `/auth/` vazio, sem páginas legais/exclusão de conta) foram fechados.
+
+- **Footer compartilhado** (`components/Footer.tsx`) com links para
+  `/termos`, `/privacidade` e `mailto:contato@educarse-ia.com.br`; landing
+  page atualizada para usá-lo.
+- **`/termos`** e **`/privacidade`** — páginas estáticas (Server Components)
+  com conteúdo pt-BR completo (LGPD art. 18, operadores terceiros — Supabase/
+  Stripe/Anthropic/YouTube, retenção, cookies disclosure-only). Operador é
+  pessoa física: placeholders `[CPF do responsável]` e `[comarca]` em
+  `/termos` ainda precisam ser preenchidos.
+- **Middleware** (`middleware.ts`): matcher passou a excluir `/auth/*`
+  (necessário para o callback PKCE rodar sem sessão); `/termos`/`/privacidade`
+  adicionados a `publicPaths`.
+- **`/auth/callback`** (route handler) + `lib/supabase-route.ts`
+  (`createSupabaseRouteHandlerClient`, adapter `getAll`/`setAll`) — trata
+  `exchangeCodeForSession`, usado tanto por confirmação de email quanto por
+  recuperação de senha.
+- **Fluxo de "esqueci minha senha"**: `/login` ganhou modos `forgot` /
+  `forgot-sent` (`resetPasswordForEmail` → `/auth/callback?next=/auth/reset-password`)
+  e `/auth/reset-password` (`'use client'`, valida sessão — mostra "Link
+  inválido ou expirado" se ausente — senão formulário de nova senha via
+  `updateUser`).
+- **Exclusão de conta**: `DELETE /api/account` (`routes/account.ts`) cancela
+  assinaturas Stripe ativas/trialing (log + segue em caso de erro) e chama
+  `supabase.auth.admin.deleteUser` (cascade remove tudo). `accountApi.delete()`
+  no client.
+- **`/conta`**: página de perfil/plano/uso + `DeleteAccountModal` (confirma
+  digitando "EXCLUIR"). Link no `Navbar` (ícone `Settings`).
+- Signup em `/login` ganhou texto de consentimento com links para
+  `/termos`/`/privacidade`.
+- `npm run type-check` (4 workspaces) e `npm run test` (68/68) continuam
+  passando; `npm run build --workspace=apps/web` gera todas as rotas novas
+  (`/auth/callback` dinâmica, `/auth/reset-password`, `/conta`, `/termos`,
+  `/privacidade` estáticas).
+
+**Pendências fora do código (não esquecer antes do beta):**
+- [ ] Configurar forwarding de email para `contato@educarse-ia.com.br`
+      (Cloudflare Email Routing ou ImprovMX, depende do provedor de DNS).
+- [ ] Supabase Auth → URL Configuration → Redirect URLs: adicionar
+      `<origin>/auth/callback` para `http://localhost:3000` e o domínio de
+      produção (senão `resetPasswordForEmail` falha).
+- [ ] Preencher `[CPF do responsável]` e `[comarca]` em `/termos`.
+
+**Verificação manual pendente** (UI ainda não testada no browser pelo
+usuário): footer da landing, `/termos`, `/privacidade`, fluxo "esqueci minha
+senha" + tela de confirmação, consentimento no signup, `/auth/reset-password`
+sem sessão, `/conta` + modal de exclusão, link do Navbar.
+
 ---
 
 ## 🔴 Pendências técnicas (por prioridade)
@@ -191,6 +242,108 @@ referenced project `composite: true`, e scripts `type-check` ausentes em
 (não tem `.ts` próprio, só presets de tsconfig). `npm run type-check` na raiz
 agora passa limpo nos 4 workspaces; 47/47 testes de `apps/api` continuam
 passando.
+
+---
+
+### 7. Testes automatizados para auth/LGPD (sessão "Concluído (4)")
+
+Os itens A-F (footer/legal pages, forgot/reset password, exclusão de conta,
+`/conta`) só foram cobertos por `type-check` + build, sem testes próprios.
+Não bloqueia o beta, mas vale fechar antes de iterar mais nessas áreas. Plano
+de testes detalhado por arquivo (segue os padrões já usados em
+`routes/__tests__/*.test.ts` e `app/**/__tests__/*.test.tsx`):
+
+#### `apps/api/src/routes/__tests__/account.test.ts` — `DELETE /api/account`
+
+Mocks: `../../lib/supabase` (`supabase.from(...).select().eq().single()` +
+`supabase.auth.admin.deleteUser`), `stripe` (`new Stripe()` →
+`subscriptions.list`/`subscriptions.cancel`), `authenticate` decorator
+(padrão `plans.test.ts`, `request.user = { sub: TEST_USER_ID }`).
+
+- [ ] Sem `stripe_customer_id`: pula chamadas ao Stripe, chama `deleteUser(userId)`, retorna 204
+- [ ] Com `stripe_customer_id` e assinatura `active`: `subscriptions.list({status:'active'})` retorna 1 sub → `subscriptions.cancel(sub.id)` chamado; `deleteUser` chamado; 204
+- [ ] Com `stripe_customer_id` mas sem assinaturas `active`/`trialing`: `list` retorna vazio para os dois status, nenhum `cancel` chamado, `deleteUser` chamado, 204
+- [ ] Falha do Stripe não bloqueia exclusão: `subscriptions.list`/`cancel` rejeita → erro logado (`fastify.log.error`), `deleteUser` ainda é chamado, 204
+- [ ] Erro ao buscar usuário (`select().single()` retorna `error`): 500 `{ error: 'Erro ao buscar dados da conta.' }`, `deleteUser` não chamado
+- [ ] `deleteUser` retorna `error`: 500 `{ error: 'Erro ao excluir conta.' }`
+
+#### `apps/web/src/components/__tests__/Footer.test.tsx`
+
+Sem mocks (Server Component estático, sem hooks).
+
+- [ ] Link "Termos de Uso" → `href="/termos"`
+- [ ] Link "Política de Privacidade" → `href="/privacidade"`
+- [ ] Link "Contato" → `href="mailto:contato@educarse-ia.com.br"`
+- [ ] Texto de copyright contém "educar-se-ia" e o ano atual
+
+#### `apps/web/src/app/termos/__tests__/page.test.tsx` e `privacidade/__tests__/page.test.tsx`
+
+Sem mocks — render direto do Server Component (função síncrona).
+
+- [ ] `/termos`: `<h1>` "Termos de Uso"; presença das seções 1-9 (ex.: "1. Sobre o serviço", "3. Planos, cobrança e cancelamento", "9. Contato"); renderiza `<Footer />`
+- [ ] `/privacidade`: `<h1>` "Política de Privacidade"; seções incluindo "3. Compartilhamento com terceiros" (Supabase/Stripe/Anthropic/YouTube) e "6. Cookies"; renderiza `<Footer />`
+- [ ] Nota: se `[CPF do responsável]`/`[comarca]` ainda forem placeholders ao escrever o teste, não asserir o texto literal (vai mudar quando preenchido)
+
+#### `apps/web/src/app/login/__tests__/page.test.tsx`
+
+Mocks: `next/navigation` (`useRouter` → `push`/`refresh` como `vi.fn()`),
+`@/lib/supabase` (`createClient` → `{ auth: { signInWithPassword, signUp,
+resetPasswordForEmail } }`). `userEvent` para preencher/clicar.
+
+- [ ] Modo `signin` (default): heading "Entrar na sua conta", campos email/senha, botão "Esqueci minha senha" visível
+- [ ] Clicar "Esqueci minha senha" → modo `forgot`: heading "Redefinir senha", campo de senha desaparece, botão "Enviar link de redefinição"
+- [ ] Submeter `forgot` com sucesso (`resetPasswordForEmail` → `{ error: null }`) → modo `forgot-sent`: "Verifique seu email" + email digitado + botão "Voltar para o login"
+- [ ] `resetPasswordForEmail` chamado com `redirectTo` contendo `/auth/callback?next=/auth/reset-password`
+- [ ] Submeter `forgot` com erro (`{ error: { message: 'X' } }`) → banner de erro "X", permanece em `forgot`
+- [ ] "Voltar para o login" (em `forgot` e em `forgot-sent`) → volta para `signin`
+- [ ] Alternar para `signup` → texto de consentimento "Ao criar conta, você concorda com os Termos de Uso e a Política de Privacidade." com links `href="/termos"` e `href="/privacidade"`
+- [ ] Em `signup`, botão "Esqueci minha senha" não aparece
+
+#### `apps/web/src/app/auth/reset-password/__tests__/page.test.tsx`
+
+Mocks: `next/navigation` (`useRouter`), `sonner` (`toast.success`),
+`@/lib/supabase` (`createClient` → `{ auth: { getSession, updateUser } }`).
+
+- [ ] `getSession` → `{ session: null }` → "Link inválido ou expirado" + link "Voltar para o login" → `/login`
+- [ ] `getSession` → `{ session: {...} }` → heading "Criar nova senha", campos "Nova senha"/"Confirmar nova senha", botão "Salvar nova senha"
+- [ ] Senha < 6 caracteres → erro "A senha precisa ter pelo menos 6 caracteres.", `updateUser` não chamado
+- [ ] Senhas diferentes → erro "As senhas não coincidem.", `updateUser` não chamado
+- [ ] Sucesso (`updateUser` → `{ error: null }`) → `toast.success('Senha atualizada com sucesso!')`, `router.push('/dashboard')`, `router.refresh()`
+- [ ] `updateUser` → `{ error: { message: 'X' } }` → banner de erro "X", sem redirect
+
+#### `apps/web/src/app/conta/__tests__/page.test.tsx`
+
+Mocks: `@/lib/supabase` (`createClient` → `{ auth: { getUser }, from }`,
+padrão `mockSingle`/`mockEq`/`mockSelect`/`mockFrom` de `dashboard/page.test.tsx`),
+`@/components/DeleteAccountModal` (`() => null`, padrão de mock de
+`plan/[id]/page.test.tsx`).
+
+- [ ] Loading (`getUser` pendente): spinner visível, heading "Minha Conta" ausente
+- [ ] Erro (`getUser` → `{ user: null }` ou `single()` → `error`): "Não foi possível carregar os dados da sua conta."
+- [ ] Sucesso — Perfil: heading "Minha Conta", email + `full_name`/`university`/`course`/`semester` quando presentes
+- [ ] Sucesso — Perfil com campos opcionais ausentes: `<dt>` correspondentes não renderizados
+- [ ] Plano `free` com `api_calls_this_month: 8`: badge "Grátis", "Até 2", "10 por mês", barra "8 / 10"
+- [ ] Plano `max` (limites `null`): "Ilimitado" para planos e gerações, sem barra de uso
+- [ ] Link "Gerenciar assinatura" → `href="/planos"`
+- [ ] Clicar "Excluir conta" → `DeleteAccountModal` é renderizado (mock visível)
+
+#### `apps/web/src/components/__tests__/DeleteAccountModal.test.tsx`
+
+Mocks: `next/navigation` (`useRouter`), `sonner` (`toast.success`),
+`@/lib/api` (`accountApi.delete`), `@/lib/supabase` (`createClient` →
+`{ auth: { signOut } }`).
+
+- [ ] Botão de exclusão desabilitado por padrão e com texto parcial/incorreto (ex.: "excluir", "EXCLU")
+- [ ] Digitar exatamente "EXCLUIR" habilita o botão
+- [ ] Sucesso: `accountApi.delete()` resolve → `signOut()` → `toast.success('Conta excluída com sucesso.')` → `router.push('/')` + `router.refresh()`
+- [ ] Erro: `accountApi.delete()` rejeita → mensagem inline de erro, modal permanece aberto (`onClose` não chamado)
+- [ ] Botão "Fechar" (X) e clique no overlay → chamam `onClose`
+
+#### Fora de escopo
+
+`/auth/callback` (route handler) fica fora do Vitest+RTL atual — exige mock
+de `next/headers`/`@supabase/ssr` em ambiente de Route Handler; avaliar se
+vale um teste dedicado ou cobrir via E2E (Playwright) futuro.
 
 ---
 

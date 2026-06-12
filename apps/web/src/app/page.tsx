@@ -4,6 +4,7 @@ import {
   Brain, Layers, Target, BookOpen, BarChart3, RefreshCw, Zap,
   ArrowRight, CheckCircle2,
 } from 'lucide-react'
+import { Footer } from '@/components/Footer'
 
 // ── Static data ──────────────────────────────────────────────
 
@@ -309,20 +310,7 @@ const LandingPage = () => {
         </div>
       </section>
 
-      {/* ── Footer ─────────────────────────────────────────── */}
-      <footer className="border-t border-gray-100 py-8">
-        <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <div className="flex h-6 w-6 items-center justify-center rounded bg-indigo-600">
-              <GraduationCap className="text-white" size={12} />
-            </div>
-            <span className="text-xs font-semibold text-gray-500">educar-se-ia</span>
-          </div>
-          <p className="text-xs text-gray-400">
-            &copy; {new Date().getFullYear()} educar-se-ia. Todos os direitos reservados.
-          </p>
-        </div>
-      </footer>
+      <Footer />
     </div>
   )
 }

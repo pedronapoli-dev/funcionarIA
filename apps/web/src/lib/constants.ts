@@ -1,5 +1,11 @@
+import type { UserPlan } from '@/types'
+
 export const getProgressBarColor = (progress: number): string =>
   progress >= 75 ? 'bg-green-500' : progress >= 40 ? 'bg-indigo-600' : 'bg-amber-400'
+
+export const PLAN_LABELS: Record<UserPlan, string> = {
+  free: 'Grátis', basic: 'Básico', pro: 'Pro', max: 'Max', beta: 'Beta',
+}
 
 export const PLAN_STATUS_CONFIG = {
   active:    { label: 'Ativo',     cls: 'badge-indigo' },
