@@ -115,12 +115,65 @@ senha / `/auth/` vazio, sem páginas legais/exclusão de conta) foram fechados.
 - [ ] Supabase Auth → URL Configuration → Redirect URLs: adicionar
       `<origin>/auth/callback` para `http://localhost:3000` e o domínio de
       produção (senão `resetPasswordForEmail` falha).
-- [ ] Preencher `[CPF do responsável]` e `[comarca]` em `/termos`.
+- [x] ~~Preencher `[CPF do responsável]` e `[comarca]` em `/termos`~~ ✅ Feito (sessão 5)
 
 **Verificação manual pendente** (UI ainda não testada no browser pelo
 usuário): footer da landing, `/termos`, `/privacidade`, fluxo "esqueci minha
 senha" + tela de confirmação, consentimento no signup, `/auth/reset-password`
 sem sessão, `/conta` + modal de exclusão, link do Navbar.
+
+---
+
+## ✅ Concluído nesta sessão (5) — SEO/shareability + comunidade Discord
+
+- **`/termos`**: placeholders `[CPF do responsável]` → `860.763.795-96` e
+  `[comarca]` → `Salvador/Bahia` preenchidos.
+- **SEO & shareability**: `lib/constants.ts` ganhou `SITE_URL`
+  (`https://educarse-ia.com.br`); `layout.tsx` ganhou `metadataBase` + OG/Twitter
+  card completos (pt_BR, `summary_large_image`); novos `opengraph-image.tsx` e
+  `icon.tsx` (favicon) gerados via `next/og` `ImageResponse` (indigo-600,
+  wordmark + tagline / letter-mark "e" — sem assets binários); novos `robots.ts`
+  (permite tudo exceto `/dashboard`, `/plan`, `/conta`, `/auth`) e `sitemap.ts`
+  (`/`, `/planos`, `/termos`, `/privacidade`, `/login`).
+- **Bug crítico em `middleware.ts`**: as novas rotas de metadata
+  (`/robots.txt`, `/sitemap.xml`, `/icon`, `/opengraph-image`) estavam sendo
+  redirecionadas (307) para `/login` pelo matcher de auth — corrigido excluindo
+  essas rotas do matcher.
+- **Bug crítico pré-existente**: `/planos` também redirecionava visitantes
+  deslogados para `/login` — o link "Planos" da landing e qualquer link de
+  pricing compartilhado não funcionavam para prospects. Adicionado a
+  `publicPaths`.
+- **Comunidade Discord**: novo card "Comunidade" em `/conta`, renderizado
+  apenas quando `NEXT_PUBLIC_DISCORD_INVITE_URL` está definida (mesmo padrão de
+  graceful degradation do `YOUTUBE_API_KEY`). Documentado em
+  `.claude/CLAUDE.md` → `apps/web/.env.local`.
+- Verificado via build + servidor de produção local: `/icon` e
+  `/opengraph-image` retornam `image/png` (renderização visual confirmada),
+  `/robots.txt` → `text/plain`, `/sitemap.xml` → `application/xml`, `/planos`
+  → 200.
+- 68/68 testes passando, `npm run type-check` limpo, `npm run build
+  --workspace=apps/web` gera `/icon`, `/opengraph-image`, `/robots.txt`,
+  `/sitemap.xml` como rotas estáticas.
+
+**Análise de mercado — comunidade & marketing** (resumo da discussão):
+- Grandes servidores Discord de estudos no Brasil (Study Community BR ~41k,
+  Estudos em Evidência ~48k, Illuminapse) são genéricos/foco ENEM-vestibular —
+  não competir por essa audiência.
+- Recomendação: comunidade pequena e curada via convites pessoais aos usuários
+  reais (padrão "alpha → beta invite-only → expansão por referral"), não um
+  link público de "entre aqui".
+- Canais diretos recomendados para o público real (universitários já
+  matriculados, não vestibulandos): micro-influencers studygram/studytok
+  focados em rotina universitária (5k-50k seguidores), grupos de WhatsApp/
+  Telegram de turma, subreddits/grupos de universidades específicas. O demo
+  "ementa → plano em 60s" é naturalmente bom para vídeo curto.
+
+**Pendências fora do código:**
+- [x] Servidor Discord configurado pelo usuário.
+- [ ] Definir `NEXT_PUBLIC_DISCORD_INVITE_URL` (link de convite real) em
+      `apps/web/.env.local` e nas env vars de produção (Vercel) — ativa o card
+      "Comunidade" em `/conta`.
+- [ ] Iniciar convites pessoais para os primeiros usuários reais.
 
 ---
 
@@ -344,6 +397,40 @@ Mocks: `next/navigation` (`useRouter`), `sonner` (`toast.success`),
 `/auth/callback` (route handler) fica fora do Vitest+RTL atual — exige mock
 de `next/headers`/`@supabase/ssr` em ambiente de Route Handler; avaliar se
 vale um teste dedicado ou cobrir via E2E (Playwright) futuro.
+
+---
+
+### 8. ~~Renomear repositório GitHub para alinhar com a marca~~ ✅ Feito
+
+O repositório no GitHub se chamava `funcionarIA` (nome do projeto antes do
+rebranding), enquanto domínio (`educarse-ia.com.br`), pacote raiz
+(`educarseia`) e workspaces (`@educarseia/*`) já usavam a marca atual.
+
+**Ação no GitHub:**
+- [x] Settings → General → Repository name → `educarse-ia`
+
+**Depois de renomear:**
+- [x] Remote local atualizado: `git remote set-url origin git@github.com:pedronapoli-dev/educarse-ia.git`
+      (`git fetch` não pôde ser testado neste ambiente — agente SSH sem
+      identidades carregadas, problema pré-existente do sandbox, não
+      relacionado ao rename; testar `git fetch`/`pull` no terminal normal)
+- [x] Vercel: projeto `funcionar-ia-api` (apps/web, domínios
+      `educarse-ia.com.br`/`www.educarse-ia.com.br`) consultado via MCP —
+      `live`/deployment `READY`, domínios intactos. O link do GitHub App é
+      por ID de repositório, então segue o rename automaticamente; campo de
+      git link não é exposto pela API consultada, então vale uma checagem
+      visual rápida em Project Settings → Git
+- [ ] Railway (apps/api): confirmar manualmente em Settings → Source que o
+      repo conectado segue como `pedronapoli-dev/educarse-ia` (sem acesso via
+      MCP para checar a partir daqui)
+- [x] Busca por links hardcoded para `funcionarIA` em README.md/DEPLOY.md/
+      package.json/vercel.json/.github — nenhuma referência encontrada
+      (apenas paths locais `/Users/pedro/Developer/funcionaria/funcionaria`,
+      fora de escopo)
+
+> Nota: nome do projeto na Vercel (`funcionar-ia-api`) e o path local
+> (`~/Developer/funcionaria/funcionaria`) ainda usam a marca antiga — cosmético,
+> não bloqueia nada, renomear é opcional/separado deste item.
 
 ---
 
