@@ -25,7 +25,7 @@ const TermosPage = () => {
               O educar-se-ia é um serviço que utiliza inteligência artificial para transformar ementas
               acadêmicas em planos de estudo personalizados, com exercícios, acompanhamento de progresso
               e revisão espaçada. O serviço é operado por uma pessoa física, CPF{' '}
-              <span className="font-medium text-gray-700">[CPF do responsável]</span>, doravante
+              <span className="font-medium text-gray-700">860.763.795-96</span>, doravante
               &quot;educar-se-ia&quot; ou &quot;nós&quot;.
             </p>
           </section>
@@ -97,7 +97,7 @@ const TermosPage = () => {
             <h2 className="text-lg font-bold text-gray-900">8. Lei aplicável e foro</h2>
             <p className="mt-2">
               Estes termos são regidos pelas leis da República Federativa do Brasil. Fica eleito o foro da
-              comarca de <span className="font-medium text-gray-700">[comarca]</span> para dirimir
+              comarca de <span className="font-medium text-gray-700">Salvador/Bahia</span> para dirimir
               eventuais conflitos, salvo disposição em contrário da legislação aplicável.
             </p>
           </section>

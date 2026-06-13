@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { Loader2, AlertCircle, ArrowUpCircle } from 'lucide-react'
+import { Loader2, AlertCircle, ArrowUpCircle, MessageCircle } from 'lucide-react'
 import { createClient } from '@/lib/supabase'
 import { PLAN_LABELS, getProgressBarColor } from '@/lib/constants'
 import { DeleteAccountModal } from '@/components/DeleteAccountModal'
@@ -138,6 +138,22 @@ const ContaPage = () => {
             </Link>
           </div>
         </section>
+
+        {/* Comunidade */}
+        {process.env.NEXT_PUBLIC_DISCORD_INVITE_URL && (
+          <section className="card px-4 py-5 sm:p-6">
+            <h2 className="text-sm font-semibold text-gray-900">Comunidade</h2>
+            <p className="mt-1 text-sm text-gray-500">
+              Entre no nosso Discord para trocar ideias com outros estudantes, dar sugestões e
+              acompanhar novidades de primeira mão.
+            </p>
+            <div className="mt-4">
+              <a href={process.env.NEXT_PUBLIC_DISCORD_INVITE_URL} target="_blank" rel="noopener noreferrer" className="btn-secondary">
+                <MessageCircle size={14} /> Entrar no Discord
+              </a>
+            </div>
+          </section>
+        )}
 
         {/* Zona de risco */}
         <section className="card px-4 py-5 sm:p-6 ring-red-100">

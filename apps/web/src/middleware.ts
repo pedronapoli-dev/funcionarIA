@@ -8,7 +8,7 @@ export async function middleware(request: NextRequest) {
 
   const { pathname } = request.nextUrl
 
-  const publicPaths = ['/', '/login', '/termos', '/privacidade']
+  const publicPaths = ['/', '/login', '/termos', '/privacidade', '/planos']
 
   if (!session && !publicPaths.includes(pathname)) {
     return NextResponse.redirect(new URL('/login', request.url))
@@ -20,5 +20,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon.ico|api|auth).*)'],
+  matcher: ['/((?!_next/static|_next/image|favicon.ico|icon|opengraph-image|robots.txt|sitemap.xml|api|auth).*)'],
 }

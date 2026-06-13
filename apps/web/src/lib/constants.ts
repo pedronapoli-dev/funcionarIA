@@ -1,5 +1,7 @@
 import type { UserPlan } from '@/types'
 
+export const SITE_URL = 'https://educarse-ia.com.br'
+
 export const getProgressBarColor = (progress: number): string =>
   progress >= 75 ? 'bg-green-500' : progress >= 40 ? 'bg-indigo-600' : 'bg-amber-400'
 
