@@ -420,9 +420,10 @@ rebranding), enquanto domínio (`educarse-ia.com.br`), pacote raiz
       por ID de repositório, então segue o rename automaticamente; campo de
       git link não é exposto pela API consultada, então vale uma checagem
       visual rápida em Project Settings → Git
-- [ ] Railway (apps/api): confirmar manualmente em Settings → Source que o
-      repo conectado segue como `pedronapoli-dev/educarse-ia` (sem acesso via
-      MCP para checar a partir daqui)
+- [x] Railway (apps/api): conexão GitHub quebrou após o rename ("GitHub Repo
+      not found" na branch de produção, mesmo após reconfigurar o GitHub App)
+      — projeto Railway foi deletado e recriado do zero. Ver seção
+      "Recriação completa do projeto Railway" abaixo.
 - [x] Busca por links hardcoded para `funcionarIA` em README.md/DEPLOY.md/
       package.json/vercel.json/.github — nenhuma referência encontrada
       (apenas paths locais `/Users/pedro/Developer/funcionaria/funcionaria`,
@@ -431,6 +432,55 @@ rebranding), enquanto domínio (`educarse-ia.com.br`), pacote raiz
 > Nota: nome do projeto na Vercel (`funcionar-ia-api`) e o path local
 > (`~/Developer/funcionaria/funcionaria`) ainda usam a marca antiga — cosmético,
 > não bloqueia nada, renomear é opcional/separado deste item.
+
+---
+
+#### Recriação completa do projeto Railway (efeito colateral do rename)
+
+O rename do repo GitHub quebrou a conexão do serviço Railway de forma
+irrecuperável via reconexão simples (mesmo após desinstalar/reinstalar o
+GitHub App, a branch de produção continuava com "GitHub Repo not found").
+Solução: deletar o projeto Railway inteiro e recriar do zero.
+
+**Reconstrução** (`apps/api`, segue DEPLOY.md seção 3):
+- Source: `pedronapoli-dev/educarse-ia`, branch `main`, root directory `/`,
+  Dockerfile path `apps/api/Dockerfile`, start command vazio
+- Variáveis copiadas do `apps/api/.env` local (arquivo local não é afetado
+  pela exclusão do projeto Railway — todos os secrets continuavam intactos)
+- Domínio público auto-gerado: `educarse-ia-production.up.railway.app`
+
+**Problemas encontrados e correções:**
+- GitHub App do Railway precisou ser reinstalado com acesso explícito ao
+  repo `educarse-ia` (não estava na lista de "Only select repositories")
+- Custom domain `api.educarse-ia.com.br` → 404 "Application not found"
+  (`x-railway-fallback: true`). Causa: registro CNAME `api` no Cloudflare
+  estava proxied (orange cloud), então o verificador do Railway não
+  conseguia confirmar o CNAME apontando para o novo target
+  (`vwnu87dv.up.railway.app`). **Corrigido** com o botão "Connect" (One-click
+  DNS Setup do Cloudflare) no modal "Configure DNS Records" do Railway.
+- Depois do DNS corrigido → 502 `"Application failed to respond"` (erro do
+  próprio Railway, não mais do Cloudflare). Causa: porta do custom domain
+  estava configurada como `3001` (= `EXPOSE 3001` do Dockerfile / fallback
+  `process.env.PORT ?? 3001` no código), mas o Railway injeta `PORT=8080` em
+  produção — o app na verdade escuta em `8080`. **Corrigido** trocando a
+  porta do custom domain de `3001` → `8080`.
+
+**Resultado final:** `https://api.educarse-ia.com.br/health` → `200
+{"status":"ok"}`. `git push origin main` confirmado funcionando (branch local
+em sync com `origin/main`, commit `8448784`).
+
+> ⚠️ **Nota para o futuro:** se o custom domain do Railway voltar a dar
+> "Application failed to respond", confira a porta configurada em
+> Settings → Networking — deve ser `8080` (porta injetada pelo Railway em
+> produção), **não** `3001` (porta default do código/Dockerfile, só usada
+> localmente).
+
+**Loose end não investigado:** durante a reconfiguração do GitHub App,
+apareceu um toast "Environment deleted" na aba Settings → Environments do
+repo GitHub, com um ambiente "Production" restante. Provavelmente metadata de
+deployment tracking do Railway (cosmético, deve se recriar sozinho no próximo
+deploy) — confirmar que não afeta nada se notar comportamento estranho em
+status checks de PR/commit no futuro.
 
 ---
 
