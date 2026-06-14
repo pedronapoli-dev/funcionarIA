@@ -8,12 +8,15 @@
     "allowJs":          true,
     "jsx":              "preserve",
     "incremental":      true,
+    "ignoreDeprecations": "6.0",
     "plugins":          [{ "name": "next" }],
     "paths": {
-      "@/*": ["./src/*"],
-      "@educarseia/types": ["../../packages/types/src/index.ts"]
+      "@/*": ["./src/*"]
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules"],
+  "references": [
+    { "path": "../../packages/types" }
+  ]
 }
