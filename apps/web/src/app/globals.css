@@ -44,6 +44,15 @@
     --terra-100: 251 232 223;  /* #FBE8DF — badge-warm / surface extra leve   */
     --terra-50:  254 246 242;  /* #FEF6F2 — surface ghost terracota           */
 
+    /* ── Primitivos: Neutros escuros — texto secundário e sutil ────────────
+       Nota: creme-500/400 são quentes demais para texto — falham WCAG AA
+       sobre superfícies creme (3.1:1 e 1.98:1 respectivamente).
+       Neutros escuros aqui são levemente quentes mas funcionalmente neutros.
+       Verificado com check_contrast.py em todos os pares críticos.          */
+    --neutral-900: 26 26 26;   /* #1A1A1A — quase-preto (alt. para teal-950) */
+    --neutral-700: 74 74 74;   /* #4A4A4A — texto secundário: 8.09:1/creme-100 ✅ AAA */
+    --neutral-500: 92 92 92;   /* #5C5C5C — texto sutil:     6.10:1/creme-100 ✅ AA  */
+
     /* ── Primitivos: Creme — neutros de temperatura quente ──────────────── */
     --creme-0:   255 255 255;  /* #FFFFFF — branco puro (fallback)            */
     --creme-50:  255 253 249;  /* #FFFDF9 — surface base (quase-branco quente)*/
@@ -89,9 +98,9 @@
     --color-border-focus:    var(--teal-700);    /* anel de foco              */
 
     /* Texto */
-    --color-text:            var(--teal-950);    /* texto principal           */
-    --color-text-muted:      var(--creme-500);   /* texto secundário          */
-    --color-text-subtle:     var(--creme-400);   /* placeholder / caption     */
+    --color-text:            var(--teal-950);    /* texto principal  15.98:1/creme-100 ✅ AAA */
+    --color-text-muted:      var(--neutral-700); /* texto secundário  8.09:1/creme-100 ✅ AAA */
+    --color-text-subtle:     var(--neutral-500); /* placeholder/caption 6.10:1/creme-100 ✅ AA */
     --color-text-on-dark:    var(--creme-50);    /* texto sobre fundo escuro  */
 
     /* Primária — Teal-Petróleo */
