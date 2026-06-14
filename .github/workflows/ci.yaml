@@ -1,0 +1,54 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    env:
+      # Placeholder values — NOT real credentials. Required because
+      # apps/api/src/lib/supabase.ts and apps/web/src/lib/supabase.ts call
+      # createClient() at module-load time, which throws immediately if
+      # these are undefined (no .env / .env.local exist in CI).
+      SUPABASE_URL: https://placeholder.supabase.co
+      SUPABASE_SERVICE_ROLE_KEY: placeholder-service-role-key
+      SUPABASE_ANON_KEY: placeholder-anon-key
+      JWT_SECRET: placeholder-jwt-secret
+      ANTHROPIC_API_KEY: sk-ant-placeholder
+      STRIPE_SECRET_KEY: sk_test_placeholder
+      STRIPE_WEBHOOK_SECRET: whsec_placeholder
+      STRIPE_PRICE_ID_BASIC: price_placeholder
+      STRIPE_PRICE_ID_PRO: price_placeholder
+      STRIPE_PRICE_ID_MAX: price_placeholder
+      STRIPE_PRICE_ID_BETA: price_placeholder
+      FRONTEND_URL: http://localhost:3000
+      NEXT_PUBLIC_SUPABASE_URL: https://placeholder.supabase.co
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: placeholder-anon-key
+      NEXT_PUBLIC_API_URL: http://localhost:3001
+      NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: pk_test_placeholder
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+        env:
+          NPM_CONFIG_WORKSPACES: 'false'
+
+      - run: npm ci
+      # packages/types is a composite TS project reference consumed by
+      # apps/api and apps/web; tsc -p (type-check) requires its dist/
+      # to already be built (TS6305), so build it before type-check.
+      - run: npm run build --workspace=packages/types
+      - run: npm run type-check
+      # lint: skipped for now — broken on main independent of CI
+      # (ESLint 9 flat-config migration + Next 16 removed `next lint`).
+      # Tracked in NEXT_STEPS.md.
+      - run: npm run test
+      - run: npm run build

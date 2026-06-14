@@ -110,11 +110,11 @@ senha / `/auth/` vazio, sem páginas legais/exclusão de conta) foram fechados.
   `/privacidade` estáticas).
 
 **Pendências fora do código (não esquecer antes do beta):**
-- [ ] Configurar forwarding de email para `contato@educarse-ia.com.br`
-      (Cloudflare Email Routing ou ImprovMX, depende do provedor de DNS).
-- [ ] Supabase Auth → URL Configuration → Redirect URLs: adicionar
-      `<origin>/auth/callback` para `http://localhost:3000` e o domínio de
-      produção (senão `resetPasswordForEmail` falha).
+- [x] ~~Configurar forwarding de email para `contato@educarse-ia.com.br`~~ ✅
+      Feito (sessão 6) — Cloudflare Email Routing.
+- [x] ~~Supabase Auth → URL Configuration → Redirect URLs~~ ✅ Feito (sessão 6)
+      — `Site URL` + `/auth/callback` e `/**` para `localhost:3000` e
+      `educarse-ia.com.br`. Fluxo "esqueci minha senha" testado end-to-end.
 - [x] ~~Preencher `[CPF do responsável]` e `[comarca]` em `/termos`~~ ✅ Feito (sessão 5)
 
 **Verificação manual pendente** (UI ainda não testada no browser pelo
@@ -170,10 +170,53 @@ sem sessão, `/conta` + modal de exclusão, link do Navbar.
 
 **Pendências fora do código:**
 - [x] Servidor Discord configurado pelo usuário.
-- [ ] Definir `NEXT_PUBLIC_DISCORD_INVITE_URL` (link de convite real) em
-      `apps/web/.env.local` e nas env vars de produção (Vercel) — ativa o card
-      "Comunidade" em `/conta`.
+- [x] ~~Definir `NEXT_PUBLIC_DISCORD_INVITE_URL` em `apps/web/.env.local`~~ ✅
+      Feito (sessão 6) — card "Comunidade" confirmado em `/conta`.
+- [x] ~~Adicionar `NEXT_PUBLIC_DISCORD_INVITE_URL` nas env vars de produção
+      (Vercel → projeto `funcionar-ia-api` → Production) + redeploy.~~ ✅
+      Feito (sessão 6).
 - [ ] Iniciar convites pessoais para os primeiros usuários reais.
+
+---
+
+## ✅ Concluído nesta sessão (6) — Blockers externos pré-beta: auth + email
+
+- **Supabase Auth — Redirect URLs**: `Site URL` = `https://educarse-ia.com.br`;
+  `Redirect URLs` ganharam `http://localhost:3000/auth/callback`,
+  `http://localhost:3000/**`, `https://educarse-ia.com.br/auth/callback` e
+  `https://educarse-ia.com.br/**`. Fluxo "esqueci minha senha" testado
+  end-to-end (login → email → `/auth/callback` → `/auth/reset-password` →
+  nova senha → `/dashboard`).
+- **Email transacional (Supabase Auth) — Resend custom SMTP**: domínio
+  `educarse-ia.com.br` verificado no Resend (DKIM via `resend._domainkey`,
+  SPF em `send.educarse-ia.com.br` → `amazonses.com`); Supabase Auth → SMTP
+  Settings configurado com `smtp.resend.com:465` / user `resend` / API key do
+  Resend. Emails de auth agora saem de `noreply@educarse-ia.com.br`
+  (confirmado "Delivered" no painel do Resend), substituindo o mailer padrão
+  `noreply@mail.app.supabase.io` (rate-limited, baixa reputação).
+- **DMARC**: adicionado `_dmarc.educarse-ia.com.br` TXT
+  (`v=DMARC1; p=none; rua=mailto:contato@educarse-ia.com.br`) — ausente
+  antes, é checado pelos filtros de spam do Gmail/Outlook.
+- **Forwarding `contato@educarse-ia.com.br`**: Cloudflare Email Routing
+  habilitado (MX `route{1,2,3}.mx.cloudflare.net` + SPF automáticos), regra
+  custom → email pessoal verificado. Testado, email chegou (inicialmente em
+  spam, esperado para domínio novo).
+- **Bug de UX/segurança corrigido**: tela "forgot-sent" em `/login`
+  (`apps/web/src/app/login/page.tsx`) afirmava "Enviamos um link..." mesmo
+  quando o email não corresponde a nenhuma conta (GoTrue retorna 200 sempre,
+  por design anti-enumeration). Copy ajustada para "Se houver uma conta
+  cadastrada com [email], enviamos um link... Verifique também a caixa de
+  spam." — não confirma/nega existência da conta, mas explica por que o
+  email pode não chegar.
+- **`NEXT_PUBLIC_DISCORD_INVITE_URL`**: definido em `apps/web/.env.local`
+  (`https://discord.gg/F5Tqkk499v`) e nas env vars de produção (Vercel,
+  `funcionar-ia-api`); card "Comunidade" confirmado em `/conta` e redeploy feito.
+- 21/21 testes `apps/web` continuam passando (`npm run test --workspace=apps/web`).
+
+> **Nota para o futuro**: se `educarse-ia.com.br` continuar caindo em spam
+> mesmo com SPF/DKIM/DMARC corretos, é comportamento esperado de "cold domain"
+> no Gmail/Outlook — melhora com volume/tempo de envio legítimo; marcar
+> "não é spam" ajuda a treinar o filtro por destinatário.
 
 ---
 
@@ -481,6 +524,30 @@ repo GitHub, com um ambiente "Production" restante. Provavelmente metadata de
 deployment tracking do Railway (cosmético, deve se recriar sozinho no próximo
 deploy) — confirmar que não afeta nada se notar comportamento estranho em
 status checks de PR/commit no futuro.
+
+---
+
+### 9. `npm run lint` está quebrado (pré-existente, fora do escopo da CI)
+
+Descoberto ao configurar `.github/workflows/ci.yaml`: `npm run lint` falha na
+raiz por três causas independentes, nenhuma relacionada à branch
+`foundation/ci` (confirmado via diff contra `main` — `turbo.json`,
+`apps/api/package.json`, `apps/web/package.json` idênticos):
+
+- **`apps/api`**: ESLint 9.39.4 instalado, mas o script é `eslint src --ext .ts`
+  (sintaxe pré-v9) e não existe `eslint.config.js` (flat config).
+- **`apps/web`**: Next.js 16 removeu `next lint`; o script `"lint": "next lint"`
+  falha com "Invalid project directory provided, no such directory:
+  apps/web/lint".
+- **`packages/types`** e **`packages/config`**: não têm script `lint`, então
+  `turbo run lint` falha com "Missing script: lint".
+
+`ci.yaml` roda sem o step de lint até isso ser corrigido. Migração necessária:
+criar `eslint.config.js` (flat config) para `apps/api`; decidir substituto
+para `next lint` em `apps/web` (ESLint flat config standalone com
+`@next/eslint-plugin-next`, ou `@eslint/eslintrc` compat); adicionar script
+`lint` (real ou `"echo skip"`, mesmo padrão de `type-check`/`test`/`build`) em
+`packages/types` e `packages/config`.
 
 ---
 

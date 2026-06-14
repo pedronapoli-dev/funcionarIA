@@ -111,9 +111,10 @@ const LoginPage = () => {
             </div>
             <h2 className="text-lg font-bold text-gray-900 mb-2">Verifique seu email</h2>
             <p className="text-sm text-gray-500 leading-relaxed">
-              Enviamos um link para redefinir sua senha para{' '}
-              <span className="font-medium text-gray-700">{email}</span>.
-              Clique no link para criar uma nova senha.
+              Se houver uma conta cadastrada com{' '}
+              <span className="font-medium text-gray-700">{email}</span>,
+              enviamos um link para redefinir sua senha. Verifique também a
+              caixa de spam.
             </p>
             <button
               onClick={() => setMode('signin')}

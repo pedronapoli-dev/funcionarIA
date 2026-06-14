@@ -11,7 +11,16 @@
     "resolveJsonModule":               true,
     "declaration":                     true,
     "declarationMap":                  true,
-    "sourceMap":                       true
+    "sourceMap":                       true,
+    "baseUrl": ".",
+    "paths": {
+      "@educarseia/types": ["packages/types/src/index.ts"]
+    }
   },
-  "exclude": ["node_modules"]
+  "files": [],
+  "references": [
+    { "path": "packages/types" },
+    { "path": "apps/api" },
+    { "path": "apps/web" }
+  ]
 }

@@ -1,0 +1,94 @@
+/* ============================================================================
+   educar-se-ia — Design Tokens (template)
+   Preencha os valores na fase 3. Cores em CANAIS RGB ("R G B") para suportar
+   <alpha-value> do Tailwind: bg-primary/80 etc.
+   Camadas: primitivos (cru) -> semânticos (papel). A UI consome SEMÂNTICOS.
+   Valide TODO par texto/fundo com scripts/check_contrast.py (AA mínimo).
+   ============================================================================ */
+
+@layer base {
+  :root {
+    /* --- Primitivos: escala de marca (preencher 50..900) -------------------- */
+    --brand-50:  /* R G B */;
+    --brand-100: ;
+    --brand-200: ;
+    --brand-300: ;
+    --brand-400: ;
+    --brand-500: ;   /* tom base da marca */
+    --brand-600: ;   /* ação primária */
+    --brand-700: ;
+    --brand-800: ;
+    --brand-900: ;
+
+    /* --- Primitivos: neutros (leve temperatura, não cinza puro) ------------- */
+    --neutral-0:   255 255 255;
+    --neutral-50:  ;
+    --neutral-100: ;
+    --neutral-200: ;
+    --neutral-300: ;
+    --neutral-400: ;
+    --neutral-500: ;
+    --neutral-600: ;
+    --neutral-700: ;
+    --neutral-800: ;
+    --neutral-900: ;
+
+    /* --- Primitivos: estados funcionais (cada um precisa de tom suave+forte) - */
+    --success-500: ;  --success-50: ;
+    --warning-500: ;  --warning-50: ;
+    --danger-500:  ;  --danger-50:  ;
+    --info-500:    ;  --info-50:    ;
+
+    /* --- Semânticos: papéis (a UI usa ESTES) ------------------------------- */
+    --color-bg:            var(--neutral-50);   /* fundo de página */
+    --color-surface:       var(--neutral-0);    /* card/superfície */
+    --color-surface-muted: var(--neutral-100);  /* superfície secundária */
+    --color-border:        var(--neutral-200);  /* bordas/divisores */
+
+    --color-text:          var(--neutral-900);  /* texto principal */
+    --color-text-muted:    var(--neutral-600);  /* texto secundário */
+    --color-text-subtle:   var(--neutral-400);  /* texto terciário/dica */
+
+    --color-primary:       var(--brand-600);
+    --color-primary-hover: var(--brand-500);
+    --color-on-primary:    var(--neutral-0);    /* texto sobre primária */
+    --color-primary-soft:  var(--brand-50);     /* fundo suave de marca */
+
+    --color-success: var(--success-500); --color-success-soft: var(--success-50);
+    --color-warning: var(--warning-500); --color-warning-soft: var(--warning-50);
+    --color-danger:  var(--danger-500);  --color-danger-soft:  var(--danger-50);
+    --color-info:    var(--info-500);    --color-info-soft:    var(--info-50);
+
+    --color-focus: var(--brand-500);            /* anel de foco (>=3:1) */
+
+    /* --- Tipografia: famílias e escala (base 16, razão ~1.2-1.25) ---------- */
+    /* Famílias definidas em tailwind.config.ts (fontFamily). Escala (fontSize)
+       também no config, com line-height pareado. Documente os papéis:
+       display / h1 / h2 / h3 / h4 / body / body-sm / caption / overline. */
+
+    /* --- Raio: escala intencional (não um valor único em tudo) ------------- */
+    --radius-sm: 0.375rem;   /* 6px  - inputs, badges */
+    --radius-md: 0.5rem;     /* 8px  - botões */
+    --radius-lg: 0.75rem;    /* 12px - cards */
+    --radius-xl: 1rem;       /* 16px - containers grandes */
+
+    /* --- Elevação: sombras com leve cor de marca/neutro, luz vinda de cima -- */
+    --shadow-sm: ;   /* repouso */
+    --shadow-md: ;   /* hover/dropdown */
+    --shadow-lg: ;   /* modal */
+
+    /* --- Movimento: durações e easing padronizados ------------------------ */
+    --motion-fast: 120ms;
+    --motion-base: 200ms;
+    --motion-slow: 320ms;
+    --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  }
+
+  /* Tema escuro (opcional): remapear SEMÂNTICOS -> primitivos, sem tocar a UI.
+  .dark {
+    --color-bg: var(--neutral-900);
+    --color-surface: var(--neutral-800);
+    --color-text: var(--neutral-50);
+    ...
+  } */
+}

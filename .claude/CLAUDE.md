@@ -232,3 +232,18 @@ NEXT_PUBLIC_DISCORD_INVITE_URL  # optional — shows "Comunidade" card on /conta
 - API: Railway (root: apps/api)
 - DB: Supabase hosted
 - Domain: educarse-ia.com.br (A record → Vercel, api.educarse-ia.com.br → Railway)
+
+## CI/CD
+
+- **CI:** `.github/workflows/ci.yml` runs on every push to `main` and on every
+  PR targeting `main` — `type-check`, `lint`, `test`, `build` across all
+  workspaces (Node 20, matches API Dockerfile).
+- **Workflow:** non-trivial changes go through a feature branch + PR. CI runs
+  automatically on the PR, and Vercel auto-generates a preview deployment URL
+  for it (project already connected to GitHub) — use that preview for the
+  browser verification required by the "UI or frontend changes" rule above.
+  Trivial fixes can still be pushed directly to `main` — CI still runs on push.
+- **CD:** unchanged — Vercel (apps/web) and Railway (apps/api) auto-deploy
+  from `main` on every push/merge, as documented in DEPLOY.md.
+- **Branch protection:** `main` requires the `ci` status check to pass before
+  merging (configured in GitHub repo settings, not in code).

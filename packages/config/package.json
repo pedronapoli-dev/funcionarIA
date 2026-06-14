@@ -6,6 +6,7 @@
     "./tsconfig/*": "./tsconfig/*.json"
   },
   "scripts": {
+    "build": "echo skip",
     "type-check": "echo skip",
     "test": "echo skip"
   }

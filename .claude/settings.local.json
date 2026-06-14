@@ -24,7 +24,8 @@
       "mcp__claude_ai_Stripe__get_stripe_account_info",
       "mcp__claude_ai_Stripe__fetch_stripe_resources",
       "mcp__claude_ai_Stripe__stripe_api_search",
-      "mcp__claude_ai_Vercel__get_project"
+      "mcp__claude_ai_Vercel__get_project",
+      "mcp__claude_ai_Supabase__get_logs"
     ]
   }
 }

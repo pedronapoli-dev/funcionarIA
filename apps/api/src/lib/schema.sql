@@ -1,5 +1,5 @@
 -- ============================================================
--- FuncionarIA — Schema do Banco de Dados
+-- Estudar-se-ia — Schema do Banco de Dados
 -- Execute no SQL Editor do Supabase
 -- ============================================================
 

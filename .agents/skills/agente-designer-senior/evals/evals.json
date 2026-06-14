@@ -1,0 +1,29 @@
+{
+  "skill_name": "agente-designer-senior",
+  "evals": [
+    {
+      "id": 0,
+      "name": "design-tokens-system",
+      "prompt": "A identidade visual do educar-se-ia tá genérica demais — aquele visual indigo padrão do Tailwind que todo SaaS tem. Cria um sistema de design tokens próprio pro projeto (cores com escala, tipografia, espaçamento, raio, sombra) pronto pra plugar no apps/web/tailwind.config.ts + globals.css. Quero justificativa de cada escolha, nada solto.",
+      "expected_output": "Conjunto de design tokens semânticos (não só paleta crua) entregue como CSS variables para globals.css + mapeamento em tailwind.config.ts. Escalas de cor, escala tipográfica modular com line-heights, escala de espaçamento base-4/8, raio e elevação. Cada decisão com lastro (autor/princípio + porquê). Tabela de contraste validada (AA). Aderente às convenções do repo.",
+      "files": [],
+      "assertions": []
+    },
+    {
+      "id": 1,
+      "name": "landing-redesign",
+      "prompt": "Redesenha a landing page do educar-se-ia (apps/web/src/app/page.tsx) pra ter cara de produto sério e com identidade, não de template. Mostra o antes e depois e explica o porquê de cada mudança principal.",
+      "expected_output": "Proposta de redesign com diagnóstico do estado atual (genérico), decisões fundamentadas (hierarquia, tipografia, cor, espaçamento, elevação), código React/Tailwind aderente às convenções do repo (Server Component, cn(), sem inline style, pt-BR), e comparação antes->depois. Validação de usabilidade/acessibilidade/carga cognitiva.",
+      "files": [],
+      "assertions": []
+    },
+    {
+      "id": 2,
+      "name": "brand-book",
+      "prompt": "Preciso de um brand book fundamentado pro educar-se-ia pro lançamento dos beta users — essência da marca, território visual, paleta, tipografia, princípios de UX, com embasamento de autores sérios de design. Quero algo que sustente uma mudança visual de verdade, nada raso.",
+      "expected_output": "Documento de identidade estruturado: essência/posicionamento/atributos, território visual, símbolo, cor (papéis+escalas+contraste), tipografia (escala+pares), layout/espaçamento, componentes, voz/tom e princípios de UX/acessibilidade. Cada seção com lastro em autores reais (Norman, Nielsen, Refactoring UI, Lupton, Müller-Brockmann, Mayer, WCAG, etc.). Coerente com o produto e o público.",
+      "files": [],
+      "assertions": []
+    }
+  ]
+}

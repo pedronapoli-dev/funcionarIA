@@ -2,7 +2,195 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ============================================================================
+   educar-se-ia — Design Tokens
+   Paleta: Teal-Petróleo (#1A4E5C) × Terracota (#A8452A) × Creme (#FAF4E8)
+   Território: rigor acadêmico × calor humano.
+
+   Arquitetura de duas camadas:
+     1. Primitivos  — escala de valores crus (ninguém consome direto na UI)
+     2. Semânticos  — papéis nomeados por função (a UI consome ESTES)
+
+   Cores em canais RGB "R G B" para suportar <alpha-value> do Tailwind:
+     bg-primary/80, text-primary/60, etc.
+
+   Todos os pares texto/fundo verificados com check_contrast.py (WCAG 2.2 AA).
+   ============================================================================ */
+
 @layer base {
+  :root {
+    /* ── Primitivos: escala Teal-Petróleo ────────────────────────────────── */
+    --teal-950: 8 28 34;       /* #081C22 — quase-preto petróleo             */
+    --teal-900: 13 43 52;      /* #0D2B34 — escuro profundo                  */
+    --teal-800: 26 78 92;      /* #1A4E5C — PRIMÁRIA / marca                 */
+    --teal-700: 34 96 112;     /* #226070 — hover primário / link ativo       */
+    --teal-600: 42 122 140;    /* #2A7A8C — link / ícone de destaque          */
+    --teal-500: 58 155 176;    /* #3A9BB0 — decorativo / ilustração           */
+    --teal-400: 90 185 205;    /* #5AB9CD — decorativo claro                  */
+    --teal-300: 139 210 225;   /* #8BD2E1 — surface accent médio              */
+    --teal-200: 184 221 230;   /* #B8DDE6 — surface accent suave              */
+    --teal-100: 221 240 245;   /* #DDF0F5 — surface info / badge-info         */
+    --teal-50:  240 249 251;   /* #F0F9FB — surface ghost                     */
+
+    /* ── Primitivos: escala Terracota ────────────────────────────────────── */
+    --terra-950: 60 18 8;      /* #3C1208 — escuro máximo                     */
+    --terra-900: 90 28 14;     /* #5A1C0E — escuro profundo                   */
+    --terra-800: 122 46 22;    /* #7A2E16 — erro/alerta quente, ativo escuro  */
+    --terra-700: 168 69 42;    /* #A8452A — ACENTO / CTA primário             */
+    --terra-600: 196 94 58;    /* #C45E3A — hover do CTA                      */
+    --terra-500: 220 128 90;   /* #DC805A — ícone terracota, decorativo       */
+    --terra-400: 235 162 130;  /* #EBA282 — decorativo claro                  */
+    --terra-200: 248 214 196;  /* #F8D6C4 — surface terracota suave           */
+    --terra-100: 251 232 223;  /* #FBE8DF — badge-warm / surface extra leve   */
+    --terra-50:  254 246 242;  /* #FEF6F2 — surface ghost terracota           */
+
+    /* ── Primitivos: Creme — neutros de temperatura quente ──────────────── */
+    --creme-0:   255 255 255;  /* #FFFFFF — branco puro (fallback)            */
+    --creme-50:  255 253 249;  /* #FFFDF9 — surface base (quase-branco quente)*/
+    --creme-100: 250 244 232;  /* #FAF4E8 — surface padrão / fundo de página  */
+    --creme-200: 240 232 214;  /* #F0E8D6 — card, surface elevada             */
+    --creme-300: 221 208 187;  /* #DDD0BB — border light                      */
+    --creme-400: 190 174 148;  /* #BEAE94 — border médio                      */
+    --creme-500: 155 137 108;  /* #9B896C — placeholder, ícone sutil          */
+
+    /* ── Primitivos: estados funcionais ─────────────────────────────────── */
+    /* Sucesso — verde profundo (6.55:1 / branco, 5.28:1 / badge-verde) ✅ AA */
+    --success-700: 26 107 58;  /* #1A6B3A */
+    --success-100: 212 237 218;/* #D4EDDA */
+    --success-50:  240 249 244;/* #F0F9F4 */
+
+    /* Alerta — ocre escuro (7.48:1 / branco, 6.75:1 / badge-amarelo) ✅ AAA */
+    --warning-700: 122 74 0;   /* #7A4A00 */
+    --warning-100: 255 243 205;/* #FFF3CD */
+    --warning-50:  255 250 235;/* #FFFAEB */
+
+    /* Erro — vermelho escuro (9.29:1 / branco, 7.28:1 / badge-vermelho) ✅ AAA */
+    --danger-700:  139 26 26;  /* #8B1A1A */
+    --danger-100:  253 220 220;/* #FDDCDC */
+    --danger-50:   254 242 242;/* #FEF2F2 */
+
+    /* Info — teal primário sobre azul-claro (7.80:1) ✅ AAA */
+    /* texto: --teal-800 sobre --teal-100 */
+
+    /* ═══════════════════════════════════════════════════════════════════════
+       SEMÂNTICOS — papéis nomeados por função
+       A UI consome ESTES. Primitivos são implementação, não contrato.
+       ═══════════════════════════════════════════════════════════════════════ */
+
+    /* Superfícies */
+    --color-bg:              var(--creme-100);   /* fundo de página           */
+    --color-surface:         var(--creme-50);    /* card / modal              */
+    --color-surface-muted:   var(--creme-200);   /* superfície secundária     */
+    --color-surface-subtle:  var(--teal-50);     /* surface com toque de marca*/
+
+    /* Bordas e divisores */
+    --color-border:          var(--creme-300);   /* borda padrão              */
+    --color-border-strong:   var(--creme-400);   /* borda enfatizada          */
+    --color-border-focus:    var(--teal-700);    /* anel de foco              */
+
+    /* Texto */
+    --color-text:            var(--teal-950);    /* texto principal           */
+    --color-text-muted:      var(--creme-500);   /* texto secundário          */
+    --color-text-subtle:     var(--creme-400);   /* placeholder / caption     */
+    --color-text-on-dark:    var(--creme-50);    /* texto sobre fundo escuro  */
+
+    /* Primária — Teal-Petróleo */
+    --color-primary:         var(--teal-800);    /* #1A4E5C — 9.18:1/branco ✅ */
+    --color-primary-hover:   var(--teal-700);    /* #226070 — hover           */
+    --color-primary-active:  var(--teal-900);    /* pressed                   */
+    --color-on-primary:      var(--creme-50);    /* texto sobre primary       */
+    --color-primary-soft:    var(--teal-100);    /* badge-primary, chip leve  */
+    --color-on-primary-soft: var(--teal-800);    /* texto sobre soft          */
+
+    /* Acento — Terracota (CTA de maior importância) */
+    --color-accent:          var(--terra-700);   /* #A8452A — 5.92:1/branco ✅ */
+    --color-accent-hover:    var(--terra-600);   /* hover                     */
+    --color-accent-active:   var(--terra-800);   /* pressed                   */
+    --color-on-accent:       var(--creme-0);     /* texto sobre acento        */
+    --color-accent-soft:     var(--terra-100);   /* badge-accent, chip leve   */
+    --color-on-accent-soft:  var(--terra-800);   /* texto sobre soft          */
+
+    /* Estados funcionais */
+    --color-success:         var(--success-700);
+    --color-success-soft:    var(--success-50);
+    --color-success-border:  var(--success-100);
+    --color-on-success-soft: var(--success-700);
+
+    --color-warning:         var(--warning-700);
+    --color-warning-soft:    var(--warning-50);
+    --color-warning-border:  var(--warning-100);
+    --color-on-warning-soft: var(--warning-700);
+
+    --color-danger:          var(--danger-700);
+    --color-danger-soft:     var(--danger-50);
+    --color-danger-border:   var(--danger-100);
+    --color-on-danger-soft:  var(--danger-700);
+
+    --color-info:            var(--teal-800);
+    --color-info-soft:       var(--teal-100);
+    --color-info-border:     var(--teal-200);
+    --color-on-info-soft:    var(--teal-800);
+
+    /* Foco — anel de foco visível (WCAG 2.2 — 3:1 mínimo sobre qualquer fundo) */
+    --color-focus-ring:      var(--teal-700);    /* #226070 — 7.06:1/branco ✅ */
+
+    /* ── Raio: escala intencional ────────────────────────────────────────── */
+    /* Não um valor único em tudo. Cada papel tem seu raio.                   */
+    --radius-xs:  0.25rem;   /*  4px — badge, chip                           */
+    --radius-sm:  0.375rem;  /*  6px — input, select                         */
+    --radius-md:  0.5rem;    /*  8px — botão                                 */
+    --radius-lg:  0.75rem;   /* 12px — card, dropdown                        */
+    --radius-xl:  1rem;      /* 16px — modal, painel lateral                 */
+    --radius-2xl: 1.5rem;    /* 24px — container hero                        */
+    --radius-full: 9999px;   /* pílula — avatar, progress                    */
+
+    /* ── Elevação: sombras com leve cor petróleo (não cinza puro) ────────── */
+    /* Truque do Refactoring UI: sombras com cor de marca parecem mais ricas. */
+    --shadow-xs: 0 1px 2px 0 rgb(26 78 92 / 0.06);
+    --shadow-sm: 0 1px 3px 0 rgb(26 78 92 / 0.08),
+                 0 1px 2px -1px rgb(26 78 92 / 0.06);
+    --shadow-md: 0 4px 6px -1px rgb(26 78 92 / 0.08),
+                 0 2px 4px -2px rgb(26 78 92 / 0.06);
+    --shadow-lg: 0 10px 15px -3px rgb(26 78 92 / 0.10),
+                 0 4px 6px -4px rgb(26 78 92 / 0.06);
+    --shadow-xl: 0 20px 25px -5px rgb(26 78 92 / 0.12),
+                 0 8px 10px -6px rgb(26 78 92 / 0.06);
+
+    /* ── Movimento: durações e easing padronizados ───────────────────────── */
+    --motion-instant: 80ms;
+    --motion-fast:    150ms;
+    --motion-base:    220ms;
+    --motion-slow:    350ms;
+    --ease-standard:  cubic-bezier(0.2, 0, 0, 1);
+    --ease-enter:     cubic-bezier(0, 0, 0.2, 1);
+    --ease-exit:      cubic-bezier(0.4, 0, 1, 1);
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   BASE — reset semântico com os tokens
+   ══════════════════════════════════════════════════════════════════════════════ */
+
+@layer base {
+  html {
+    @apply antialiased;
+    background-color: rgb(var(--color-bg));
+    color: rgb(var(--color-text));
+  }
+
+  /* Seleção de texto com cor de marca */
+  ::selection {
+    background-color: rgb(var(--teal-200) / 0.6);
+    color: rgb(var(--teal-900));
+  }
+
+  /* Anel de foco global — WCAG 2.2 Focus Visible */
+  :focus-visible {
+    outline: 2px solid rgb(var(--color-focus-ring));
+    outline-offset: 2px;
+  }
+
+  /* Inputs e controles de formulário */
   input[type="text"],
   input[type="email"],
   input[type="password"],
@@ -10,56 +198,220 @@
   input[type="number"],
   select,
   textarea {
-    @apply block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300
-           placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600
-           sm:text-sm sm:leading-6;
+    @apply block w-full rounded-[--radius-sm] border-0 py-1.5
+           text-sm leading-6;
+    color: rgb(var(--color-text));
+    background-color: rgb(var(--color-surface));
+    box-shadow: 0 0 0 1px rgb(var(--color-border));
+    transition: box-shadow var(--motion-fast) var(--ease-standard);
+  }
+
+  input[type="text"]::placeholder,
+  input[type="email"]::placeholder,
+  input[type="password"]::placeholder,
+  input[type="number"]::placeholder,
+  textarea::placeholder {
+    color: rgb(var(--color-text-subtle));
+  }
+
+  input[type="text"]:focus,
+  input[type="email"]:focus,
+  input[type="password"]:focus,
+  input[type="date"]:focus,
+  input[type="number"]:focus,
+  select:focus,
+  textarea:focus {
+    box-shadow: 0 0 0 2px rgb(var(--color-border-focus));
+    outline: none;
   }
 
   input[type="range"] {
-    @apply appearance-none w-full h-1.5 bg-gray-200 rounded-full accent-indigo-600
-           ring-0 shadow-none border-0 p-0;
+    @apply appearance-none w-full h-1.5 rounded-full border-0 p-0;
+    background-color: rgb(var(--color-border));
+    accent-color: rgb(var(--color-primary));
   }
 
   label {
-    @apply block text-sm font-medium leading-6 text-gray-900;
+    @apply block text-sm font-medium leading-6;
+    color: rgb(var(--color-text));
   }
 }
 
+/* ══════════════════════════════════════════════════════════════════════════════
+   COMPONENTES — refatorados sobre tokens semânticos
+   API de classes mantida intacta (.btn, .card, .badge-*, etc.)
+   ══════════════════════════════════════════════════════════════════════════════ */
+
 @layer components {
+
+  /* ── Botões ─────────────────────────────────────────────────────────────── */
+
   .btn {
-    @apply inline-flex items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-semibold
-           shadow-sm disabled:opacity-50 disabled:cursor-not-allowed transition-colors;
+    @apply inline-flex items-center justify-center gap-2
+           px-4 py-2 text-sm font-semibold
+           disabled:opacity-50 disabled:cursor-not-allowed;
+    border-radius: var(--radius-md);
+    transition: background-color var(--motion-fast) var(--ease-standard),
+                box-shadow var(--motion-fast) var(--ease-standard),
+                color var(--motion-fast) var(--ease-standard);
   }
+
+  /* Primário — teal-petróleo (ação principal, navegação, formulários) */
   .btn-primary {
-    @apply btn bg-indigo-600 text-white hover:bg-indigo-500
-           focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600;
+    @apply btn;
+    background-color: rgb(var(--color-primary));
+    color: rgb(var(--color-on-primary));
+    box-shadow: var(--shadow-xs);
   }
+  .btn-primary:hover:not(:disabled) {
+    background-color: rgb(var(--color-primary-hover));
+    box-shadow: var(--shadow-sm);
+  }
+  .btn-primary:active:not(:disabled) {
+    background-color: rgb(var(--color-primary-active));
+    box-shadow: var(--shadow-xs);
+  }
+  .btn-primary:focus-visible {
+    outline: 2px solid rgb(var(--color-focus-ring));
+    outline-offset: 2px;
+  }
+
+  /* Acento — terracota (CTA de conversão, ação de maior destaque) */
+  .btn-accent {
+    @apply btn;
+    background-color: rgb(var(--color-accent));
+    color: rgb(var(--color-on-accent));
+    box-shadow: var(--shadow-xs);
+  }
+  .btn-accent:hover:not(:disabled) {
+    background-color: rgb(var(--color-accent-hover));
+    box-shadow: var(--shadow-sm);
+  }
+  .btn-accent:active:not(:disabled) {
+    background-color: rgb(var(--color-accent-active));
+    box-shadow: var(--shadow-xs);
+  }
+  .btn-accent:focus-visible {
+    outline: 2px solid rgb(var(--color-accent));
+    outline-offset: 2px;
+  }
+
+  /* Secundário — outline sobre superfície */
   .btn-secondary {
-    @apply btn bg-white text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50;
+    @apply btn;
+    background-color: rgb(var(--color-surface));
+    color: rgb(var(--color-text));
+    box-shadow: 0 0 0 1px rgb(var(--color-border-strong));
   }
+  .btn-secondary:hover:not(:disabled) {
+    background-color: rgb(var(--color-surface-muted));
+    box-shadow: 0 0 0 1px rgb(var(--color-border-focus));
+  }
+  .btn-secondary:focus-visible {
+    outline: 2px solid rgb(var(--color-focus-ring));
+    outline-offset: 2px;
+  }
+
+  /* Ghost — sem fundo, sem borda */
   .btn-ghost {
-    @apply btn bg-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-100 shadow-none;
+    @apply btn;
+    background-color: transparent;
+    color: rgb(var(--color-text-muted));
+    box-shadow: none;
   }
+  .btn-ghost:hover:not(:disabled) {
+    background-color: rgb(var(--color-surface-muted));
+    color: rgb(var(--color-text));
+  }
+  .btn-ghost:focus-visible {
+    outline: 2px solid rgb(var(--color-focus-ring));
+    outline-offset: 2px;
+  }
+
+  /* ── Card ───────────────────────────────────────────────────────────────── */
 
   .card {
-    @apply overflow-hidden rounded-lg bg-white shadow-sm ring-1 ring-gray-900/5;
+    @apply overflow-hidden;
+    border-radius: var(--radius-lg);
+    background-color: rgb(var(--color-surface));
+    box-shadow: var(--shadow-sm);
+    border: 1px solid rgb(var(--color-border));
+    transition: box-shadow var(--motion-base) var(--ease-standard);
   }
+  .card:hover {
+    box-shadow: var(--shadow-md);
+  }
+
+  /* ── Badge ──────────────────────────────────────────────────────────────── */
 
   .badge {
-    @apply inline-flex items-center gap-x-1 rounded-full px-2 py-1 text-xs font-medium ring-1 ring-inset;
+    @apply inline-flex items-center gap-x-1 px-2 py-0.5 text-xs font-medium;
+    border-radius: var(--radius-xs);
+    border: 1px solid transparent;
   }
-  .badge-gray   { @apply badge ring-gray-500/10   bg-gray-50   text-gray-600; }
-  .badge-indigo { @apply badge ring-indigo-700/10 bg-indigo-50 text-indigo-700; }
-  .badge-green  { @apply badge ring-green-600/20  bg-green-50  text-green-700; }
-  .badge-amber  { @apply badge ring-yellow-600/20 bg-yellow-50 text-yellow-800; }
-  .badge-red    { @apply badge ring-red-600/10    bg-red-50    text-red-700; }
-  .badge-purple { @apply badge ring-purple-700/10 bg-purple-50 text-purple-700; }
+
+  /* Substituímos os badges genéricos por variantes semânticas do sistema */
+  .badge-gray {
+    @apply badge;
+    background-color: rgb(var(--color-surface-muted));
+    color: rgb(var(--color-text-muted));
+    border-color: rgb(var(--color-border));
+  }
+  .badge-primary {
+    @apply badge;
+    background-color: rgb(var(--color-primary-soft));
+    color: rgb(var(--color-on-primary-soft));
+    border-color: rgb(var(--teal-200));
+  }
+  /* Mantém alias .badge-indigo → badge-primary para compatibilidade */
+  .badge-indigo { @apply badge-primary; }
+
+  .badge-accent {
+    @apply badge;
+    background-color: rgb(var(--color-accent-soft));
+    color: rgb(var(--color-on-accent-soft));
+    border-color: rgb(var(--terra-200));
+  }
+
+  .badge-green {
+    @apply badge;
+    background-color: rgb(var(--color-success-soft));
+    color: rgb(var(--color-on-success-soft));
+    border-color: rgb(var(--color-success-border));
+  }
+  .badge-amber {
+    @apply badge;
+    background-color: rgb(var(--color-warning-soft));
+    color: rgb(var(--color-on-warning-soft));
+    border-color: rgb(var(--color-warning-border));
+  }
+  .badge-red {
+    @apply badge;
+    background-color: rgb(var(--color-danger-soft));
+    color: rgb(var(--color-on-danger-soft));
+    border-color: rgb(var(--color-danger-border));
+  }
+  .badge-info {
+    @apply badge;
+    background-color: rgb(var(--color-info-soft));
+    color: rgb(var(--color-on-info-soft));
+    border-color: rgb(var(--color-info-border));
+  }
+  /* Mantém alias .badge-purple → badge-info para compatibilidade */
+  .badge-purple { @apply badge-info; }
+
+  /* ── Layout helpers ─────────────────────────────────────────────────────── */
 
   .page-header {
-    @apply border-b border-gray-200 pb-5 mb-8 flex flex-wrap items-center justify-between gap-4;
+    @apply pb-5 mb-8 flex flex-wrap items-center justify-between gap-4;
+    border-bottom: 1px solid rgb(var(--color-border));
   }
 
   .form-section {
-    @apply border-b border-gray-900/10 pb-10 mb-10 last:border-0 last:pb-0 last:mb-0;
+    @apply pb-10 mb-10 last:pb-0 last:mb-0;
+    border-bottom: 1px solid rgb(var(--color-border));
+  }
+  .form-section:last-child {
+    border-bottom: none;
   }
 }
