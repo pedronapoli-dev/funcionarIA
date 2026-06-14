@@ -1,5 +1,5 @@
 {
-  "buildCommand": "if [ -f package.json ] && grep -q 'workspaces' package.json; then npx turbo run build --filter=@educarseia/web --dangerously-disable-package-manager-check; else cd ../.. && npx turbo run build --filter=@educarseia/web --dangerously-disable-package-manager-check; fi",
+  "buildCommand": "npm run build --workspace=packages/types && npm run build --workspace=apps/web",
   "outputDirectory": "apps/web/.next",
   "installCommand": "npm install",
   "framework": "nextjs"
