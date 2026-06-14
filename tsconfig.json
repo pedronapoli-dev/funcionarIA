@@ -11,7 +11,11 @@
     "resolveJsonModule":               true,
     "declaration":                     true,
     "declarationMap":                  true,
-    "sourceMap":                       true
+    "sourceMap":                       true,
+    "paths": {
+      "@educarseia/types": ["packages/types/dist/index.d.ts"],
+      "@educarseia/types/*": ["packages/types/dist/*"]
+    }
   },
   "exclude": ["node_modules"]
 }
