@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 const path = require('path')
 const nextConfig = {
-  transpilePackages: ['@funcionaria/types'],
+  transpilePackages: ['@educarseia/types'],
   turbopack: {
     root: path.resolve(__dirname, '../..'),
   },
