@@ -42,6 +42,7 @@ jobs:
           # cache-dependency-path: package-lock.json
 
       - run: npm ci
+      - run: npm run build --workspace=packages/types 
       - run: npm run type-check
       - run: npm run lint
       - run: npm run test
