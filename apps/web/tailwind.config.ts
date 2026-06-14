@@ -108,6 +108,12 @@ const config: Config = {
           100: 'rgb(var(--terra-100) / <alpha-value>)',
           50:  'rgb(var(--terra-50) / <alpha-value>)',
         },
+        // ── Neutros escuros — texto secundário/sutil (primitivos)
+        neutral: {
+          900: 'rgb(var(--neutral-900) / <alpha-value>)',
+          700: 'rgb(var(--neutral-700) / <alpha-value>)',
+          500: 'rgb(var(--neutral-500) / <alpha-value>)',
+        },
         creme: {
           500: 'rgb(var(--creme-500) / <alpha-value>)',
           400: 'rgb(var(--creme-400) / <alpha-value>)',
