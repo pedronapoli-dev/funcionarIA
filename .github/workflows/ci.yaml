@@ -38,6 +38,8 @@ jobs:
         with:
           node-version: 20
           cache: npm
+        env:
+          NPM_CONFIG_WORKSPACES: 'false'
 
       - run: npm ci
       # packages/types is a composite TS project reference consumed by
