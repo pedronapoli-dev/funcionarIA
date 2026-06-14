@@ -527,6 +527,30 @@ status checks de PR/commit no futuro.
 
 ---
 
+### 9. `npm run lint` está quebrado (pré-existente, fora do escopo da CI)
+
+Descoberto ao configurar `.github/workflows/ci.yaml`: `npm run lint` falha na
+raiz por três causas independentes, nenhuma relacionada à branch
+`foundation/ci` (confirmado via diff contra `main` — `turbo.json`,
+`apps/api/package.json`, `apps/web/package.json` idênticos):
+
+- **`apps/api`**: ESLint 9.39.4 instalado, mas o script é `eslint src --ext .ts`
+  (sintaxe pré-v9) e não existe `eslint.config.js` (flat config).
+- **`apps/web`**: Next.js 16 removeu `next lint`; o script `"lint": "next lint"`
+  falha com "Invalid project directory provided, no such directory:
+  apps/web/lint".
+- **`packages/types`** e **`packages/config`**: não têm script `lint`, então
+  `turbo run lint` falha com "Missing script: lint".
+
+`ci.yaml` roda sem o step de lint até isso ser corrigido. Migração necessária:
+criar `eslint.config.js` (flat config) para `apps/api`; decidir substituto
+para `next lint` em `apps/web` (ESLint flat config standalone com
+`@next/eslint-plugin-next`, ou `@eslint/eslintrc` compat); adicionar script
+`lint` (real ou `"echo skip"`, mesmo padrão de `type-check`/`test`/`build`) em
+`packages/types` e `packages/config`.
+
+---
+
 ## 🟡 Melhorias de produto (próximo ciclo)
 
 ### UI/UX
