@@ -12,6 +12,7 @@
     "declaration":                     true,
     "declarationMap":                  true,
     "sourceMap":                       true,
+    "baseUrl": ".",
     "paths": {
       "@educarseia/types": ["packages/types/src/index.ts"]
     }
